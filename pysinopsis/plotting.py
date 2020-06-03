@@ -69,15 +69,15 @@ sinopsis_labels = {'Dl': r'$D_L \mathrm{[Mpc]}$',
                    'AMass1_m': r'$$',
                    'AMass1_M': r'$$',
                    'TotMass1': r'$$',
-                   'lVwage': r'$$',
-                   'lVwage_m': r'$$',
-                   'lVwage_M': r'$$',
-                   'lwage': r'$$',
-                   'lwage_m': r'$$',
-                   'lwage_M': r'$$',
-                   'mwage': r'$$',
-                   'mwage_m': r'$$',
-                   'mwage_M': r'$$',
+                   'lVwage': r'$\log \langle t_\star \rangle_V \mathrm{[yr]}$',
+                   'lVwage_m': r'$\log \langle t_\star \rangle_V^\mathrm{min} \mathrm{[yr]}$',
+                   'lVwage_M': r'$\log \langle t_\star \rangle_V^\mathrm{max} \mathrm{[yr]}$',
+                   'lwage': r'$\log \langle t_\star \rangle_L \mathrm{[yr]}$',
+                   'lwage_m': r'$\log \langle t_\star \rangle_L^\mathrm{min} \mathrm{[yr]}$',
+                   'lwage_M': r'$\log \langle t_\star \rangle_L^\mathrm{max} \mathrm{[yr]}$',
+                   'mwage': r'$\log \langle t_\star \rangle_M \mathrm{[yr]}$',
+                   'mwage_m': r'$\log \langle t_\star \rangle_M^\mathrm{min} \mathrm{[yr]}$',
+                   'mwage_M': r'$\log \langle t_\star \rangle_M^\mathrm{max} \mathrm{[yr]}$',
                    'sfr_1': r'$SFR_1$',
                    'sfr_2': r'$SFR_2$',
                    'sfr_3': r'$SFR_3$',
@@ -134,10 +134,10 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None)
     if ax is None:
         ax = plt.gca()
 
-    map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap)
+    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap)
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')
 
-    ax.figure.colorbar(mappable=map, label=sinopsis_labels[sinopsis_property])
+    ax.figure.colorbar(mappable=sinopsis_map, label=sinopsis_labels[sinopsis_property])
 

@@ -142,6 +142,7 @@ class SinopsisCube:
         self.wl = obs_cube[1].header['CRVAL3'] + obs_cube[1].header['CD3_3'] * np.arange(obs_cube[1].header['NAXIS3'])
         self.f_obs = masked_array(obs_cube[1].data, mask=np.isnan(obs_cube[1].data))
         self.f_err = masked_array(np.sqrt(obs_cube[2].data), mask=np.isnan(obs_cube[2].data))  # FIXME: CHECK!
+        self.cube_shape = self.f_obs.shape
 
         # Model cube:
         model_cube = fits.open(sinopsis_directory + galaxy_id + '_modelcube.fits')[0]

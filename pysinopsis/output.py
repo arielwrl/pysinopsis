@@ -5,6 +5,10 @@ ariel@padova
 
 Tools to organize SINOPSIS output in python.
 
+TODO: Method for radial profiles, requires calculating distance to centre of the cube (wcs?)
+TODO: Past and future datacubes, require parametric SFH module and spectral library handling
+TODO: Difference between observed and synthetic datacube
+
 """
 
 import numpy as np
@@ -150,6 +154,10 @@ class SinopsisCube:
 
         self.f_syn = masked_array(model_cube.data, mask=model_cube.data == -999)
         self.f_syn_cont = masked_array(model_cube_nolines.data, mask=model_cube.data == -999)
+
+        # Emission only cube:
+        self.emission_only = self.f_obs - self.f_syn_cont
+        self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
 
     def plot_spaxel(self, x, y, plot_error=True, plot_legend=True):
 

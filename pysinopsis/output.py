@@ -7,7 +7,6 @@ Tools to organize SINOPSIS output in python.
 
 TODO: Method for radial profiles, requires calculating distance to centre of the cube (wcs?)
 TODO: Past and future datacubes, require parametric SFH module and spectral library handling
-TODO: Difference between observed and synthetic datacube
 
 """
 
@@ -15,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.ma import masked_array
 from astropy.io import fits
+from astropy.table import Table
 from collections import OrderedDict
 from pysinopsis.plotting import plot_fit, plot_sinopsis_map
 
@@ -122,7 +122,11 @@ class SinopsisCube:
 
     """
 
-    def __init__(self, galaxy_id, obs_file, sinopsis_directory):
+    def __init__(self, galaxy_id, obs_file, sinopsis_directory='./'):
+
+        self.galaxy_id = galaxy_id
+        self.obs_file = obs_file
+        self.sinopsis_directory = sinopsis_directory
 
         # Ages:
         self.age_bins = np.genfromtxt(sinopsis_directory + galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]
@@ -137,7 +141,7 @@ class SinopsisCube:
         self.mag = read_mag_cube(sinopsis_directory + galaxy_id + '_mag.fits')
 
         # Observed cube:
-        obs_cube = fits.open(sinopsis_directory + obs_file)
+        obs_cube = fits.open(obs_file)
 
         self.obs_header = {'primary': obs_cube[0].header,
                            'flux': obs_cube[1].header,
@@ -158,6 +162,30 @@ class SinopsisCube:
         # Emission only cube:
         self.emission_only = self.f_obs - self.f_syn_cont
         self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
+
+    def invalid_spaxel(self, x, y):
+        if np.all(self.f_syn.mask[:, x, y]):
+            return True
+        else:
+            return False
+
+    def fit_details(self, x, y):
+
+        if self.invalid_spaxel(x, y):
+            print('>>> Masked spaxel!')
+
+        else:
+
+            fname_prefix = self.obs_file.split('.')[0]
+            fname_fit_details = fname_prefix + '.%0.4d_%0.4d.out' % (x+1, y+1)  # FIXME: 0- or 1-indexed?
+
+            n_features = open(fname_fit_details, 'rt').read().splitlines()[0].split()[0]
+            n_features = int(n_features)
+
+            fit_details_table = Table.read(fname_fit_details, format='ascii', header_start=1,
+                                           data_end=n_features+2)
+
+            return fit_details_table
 
     def plot_spaxel(self, x, y, plot_error=True, plot_legend=True):
 
@@ -180,7 +208,7 @@ class SinopsisCube:
 
 
 if __name__ == '__main__':
-    sinopsis_cube = SinopsisCube('A370_01', 'A370_01_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
+    sinopsis_cube = SinopsisCube('A370_01', 'tests/test_run/A370_01_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
     sinopsis_cube.plot_spaxel(25, 25, plot_error=False)
     sinopsis_cube.plot_map('SFR1')
 

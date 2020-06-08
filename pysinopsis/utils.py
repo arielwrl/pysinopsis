@@ -16,7 +16,7 @@ def calc_sn(wl, f_obs, f_err, z, window_limits=(5500, 5700)):
 
     window = (wl > window_limits[0]) & (wl < window_limits[1])
 
-    sn = np.mean(f_obs[window]) / np.mean(f_err[window])
+    sn = np.mean(f_obs[window]) / np.mean(np.sqrt(f_err[window]))
 
     return sn
 

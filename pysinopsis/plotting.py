@@ -91,12 +91,22 @@ sinopsis_labels = {'Dl': r'$D_L \mathrm{[Mpc]}$',
                    'sfr_11': r'$SFR_11$'}
 
 spec_labels = {'wl': r'$\lambda \, \mathrm{[\AA]}$',
-               'f_lambda': r'$F_\lambda \, \mathrm{[erg \, s^{-1} \, cm^{-2} \, \AA^{-1}]}$'}
+               'f_lambda': r'$F_\lambda \, \mathrm{[erg \, s^{-1} \, cm^{-2} \, \AA^{-1}]}$',
+               'res': r'$\left(O_\lambda - M_\lambda^C)/M_\lambda^C$'}
 
 
-def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True, plot_legend=True, flux_unit=1):
+def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True, plot_legend=True, flux_unit=1,
+             obs_color='k', syn_color='b', syn_cont_color='g', obs_lw=0.5, syn_lw=1.5):
     """
 
+    FIXME: Doc me
+    FIXME: Hard-coded colors
+
+    :param syn_lw:
+    :param obs_lw:
+    :param syn_cont_color:
+    :param syn_color:
+    :param obs_color:
     :param wl:
     :param f_obs:
     :param f_syn:
@@ -115,9 +125,9 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
     if ax is None:
         ax = plt.gca()
 
-    ax.plot(wl, flux_unit * f_obs, color='k', lw=0.5, label='Observed Spectrum')
-    ax.plot(wl, flux_unit * f_syn, color='blue', label='Synthetic Spectrum')
-    ax.plot(wl, flux_unit * f_syn_cont, color='green', label='Synthetic Spectrum (Continuum)')
+    ax.plot(wl, flux_unit * f_obs, color=obs_color, lw=obs_lw, label='Observed Spectrum')
+    ax.plot(wl, flux_unit * f_syn, color=syn_color, lw=syn_lw, label='Synthetic Spectrum')
+    ax.plot(wl, flux_unit * f_syn_cont, color=syn_cont_color, lw=syn_lw, label='Synthetic Spectrum (Continuum)')
 
     if plot_error:
         ax.plot(wl, flux_unit * f_err, '--r', label='Error')
@@ -127,6 +137,17 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
 
     ax.set_xlabel(spec_labels['wl'])
     ax.set_ylabel(spec_labels['f_lambda'])
+
+
+def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, ax=None):
+
+    if ax is None:
+        ax = plt.gca()
+
+    ax.plot(wl, (f_obs-f_syn_cont)/f_syn_cont, color=res_color, lw=res_lw)
+
+    ax.set_ylabel(spec_labels['res'])
+    ax.set_xlabel(spec_labels['wl'])
 
 
 def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None):
@@ -140,4 +161,5 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None)
     ax.set_ylabel('y')
 
     ax.figure.colorbar(mappable=sinopsis_map, label=sinopsis_labels[sinopsis_property])
+
 

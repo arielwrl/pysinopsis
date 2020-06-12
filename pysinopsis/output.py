@@ -189,6 +189,9 @@ class SinopsisCube:
 
     def plot_spaxel(self, x, y, plot_error=True, plot_legend=True):
 
+        if self.invalid_spaxel(x, y):
+            print('>>> Masked spaxel!')
+
         plt.figure()
 
         # FIXME : BUNIT conversion sort of hard-coded

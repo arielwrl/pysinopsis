@@ -92,7 +92,7 @@ sinopsis_labels = {'Dl': r'$D_L \mathrm{[Mpc]}$',
 
 spec_labels = {'wl': r'$\lambda \, \mathrm{[\AA]}$',
                'f_lambda': r'$F_\lambda \, \mathrm{[erg \, s^{-1} \, cm^{-2} \, \AA^{-1}]}$',
-               'res': r'$\left(O_\lambda - M_\lambda^C)/M_\lambda^C$'}
+               'res': r'$\left(O_\lambda - M_\lambda^C \right)/M_\lambda^C$'}
 
 
 def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True, plot_legend=True, flux_unit=1,
@@ -100,7 +100,6 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
     """
 
     FIXME: Doc me
-    FIXME: Hard-coded colors
 
     :param syn_lw:
     :param obs_lw:
@@ -148,6 +147,10 @@ def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, ax=None):
 
     ax.set_ylabel(spec_labels['res'])
     ax.set_xlabel(spec_labels['wl'])
+
+    ax.set_ylim(-0.35, 0.35)
+
+    ax.hlines(y=0, xmin=wl[0], xmax=wl[-1], lw=2, zorder=15, linestyles='dashed')
 
 
 def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None):

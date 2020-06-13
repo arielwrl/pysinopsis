@@ -12,11 +12,12 @@ TODO: Past and future datacubes, require parametric SFH module and spectral libr
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 from numpy.ma import masked_array
 from astropy.io import fits
 from astropy.table import Table
 from collections import OrderedDict
-from pysinopsis.plotting import plot_fit, plot_sinopsis_map
+import pysinopsis.plotting as sinplot
 
 
 def read_results_cube(output_cube_file):
@@ -187,7 +188,15 @@ class SinopsisCube:
 
             return fit_details_table
 
-    def plot_spaxel(self, x, y, plot_error=True, plot_legend=True):
+    def plot_map(self, sinopsis_property):
+
+        plt.figure()
+
+        sinplot.plot_sinopsis_map(self, sinopsis_property)
+
+        plt.show()
+
+    def plot_spectrum(self, x, y, plot_error=True, plot_legend=True):
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
@@ -195,23 +204,42 @@ class SinopsisCube:
         plt.figure()
 
         # FIXME : BUNIT conversion sort of hard-coded
-        plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
-                 plot_error=plot_error, plot_legend=plot_legend,
-                 flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]))
+        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
+                         plot_error=plot_error, plot_legend=plot_legend,
+                         flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]))
 
         plt.show()
 
-    def plot_map(self, sinopsis_property):
+    def plot_fit_complete(self, x, y, figsize=(7.75, 6.5)):
 
-        plt.figure()
+        if self.invalid_spaxel(x, y):
+            print('>>> Masked spaxel!')
 
-        plot_sinopsis_map(self, sinopsis_property)
+        plt.figure(figsize=figsize)
 
-        plt.show()
+        gs1 = gridspec.GridSpec(3, 3)
+        gs1.update(bottom=0.47, top=0.96, hspace=0.05, right=0.96)
+
+        gs2 = gridspec.GridSpec(1, 3)
+        gs2.update(top=0.38, bottom=0.08, hspace=0.05, right=0.96, wspace=0.02)
+
+        ax_spectrum = plt.subplot(gs1[0:2, :])
+        ax_residuals = plt.subplot(gs1[2, :], sharex=ax_spectrum)
+        ax_sfh = plt.subplot(gs2[0, 0])
+        ax_annotations = plt.subplot(gs2[0, 1:3])
+
+        # FIXME : BUNIT conversion sort of hard-coded
+        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
+                         flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]), ax=ax_spectrum)
+
+        sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals)
 
 
 if __name__ == '__main__':
-    sinopsis_cube = SinopsisCube('A370_01', 'tests/test_run/A370_01_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
-    sinopsis_cube.plot_spaxel(25, 25, plot_error=False)
-    sinopsis_cube.plot_map('SFR1')
+    import importlib
+    importlib.reload(sinplot)
 
+    sinopsis_cube = SinopsisCube('A370_01', 'tests/test_run/A370_01_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
+    # sinopsis_cube.plot_spectrum(25, 27, plot_error=False)
+    # sinopsis_cube.plot_map('SFR1')
+    sinopsis_cube.plot_fit_complete(25, 27)

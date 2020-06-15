@@ -18,6 +18,7 @@ from astropy.io import fits
 from astropy.table import Table
 from collections import OrderedDict
 import pysinopsis.plotting as sinplot
+from pysinopsis import utils
 
 
 def read_results_cube(output_cube_file):
@@ -213,37 +214,54 @@ class SinopsisCube:
 
         plt.show()
 
-    def plot_fit_complete(self, x, y, figsize=(7.75, 6.5)):
+    def plot_fit_complete(self, x, y, figsize=(12, 6.5)):
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
 
-        plt.figure(figsize=figsize)
+        fig = plt.figure(figsize=figsize)
 
-        gs1 = gridspec.GridSpec(3, 3)
-        gs1.update(bottom=0.47, top=0.96, hspace=0.05, right=0.96)
+        gs = gridspec.GridSpec(3, 4)
 
-        gs2 = gridspec.GridSpec(1, 3)
-        gs2.update(top=0.38, bottom=0.08, hspace=0.05, right=0.96, wspace=0.02)
+        ax_spectrum = plt.subplot(gs[0:2, 0:3])
+        ax_residuals = plt.subplot(gs[2, 0:3], sharex=ax_spectrum)
+        ax_sfh = plt.subplot(gs[0:2, 3:4])
 
-        ax_spectrum = plt.subplot(gs1[0:2, :])
-        ax_residuals = plt.subplot(gs1[2, :], sharex=ax_spectrum)
-        ax_sfh = plt.subplot(gs2[0, 0])
-        ax_annotations = plt.subplot(gs2[0, 1:3])
-
-        # FIXME : BUNIT conversion sort of hard-coded
+        # Plotting fit and residuals:
+        # FIXME: BUNIT conversion sort of hard-coded
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
                          flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]), ax=ax_spectrum)
 
         sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals)
 
+        # Plotting SFH:
         sfr = np.array([self.properties['sfr_'+str(i)][x, y] for i in range(1, 13)])
         sinplot.plot_sfh(self.age_bins, sfr, ax=ax_sfh)
+
+        # Annotating results:
+        # FIXME: This code is hideous
+        property_list = ['lwage', 'mwage', 'Av', 'Av_y']
+        property_values = [self.properties[sinopsis_property][x, y] for sinopsis_property in property_list]
+        uncertainty_list = [utils.get_uncertainty(self, sinopsis_property, x, y) for sinopsis_property in property_list]
+        annotations = [sinplot.sinopsis_labels[property_list[i]] + r'$ = %0.2f^{+%0.2f}_{-%0.2f}$'
+                       % (property_values[i], uncertainty_list[i][0], uncertainty_list[i][1])
+                       for i in range(len(property_list))]
+
+        for i in range(len(annotations)):
+            ax_residuals.annotate(annotations[i], xy=(0.775, 0.27-i*0.05), xycoords='figure fraction', fontsize=14)
+
+        fig.subplots_adjust(top=0.956,
+                            bottom=0.089,
+                            left=0.063,
+                            right=0.987,
+                            hspace=0.389,
+                            wspace=0.173)
 
 
 if __name__ == '__main__':
     import importlib
     importlib.reload(sinplot)
+    importlib.reload(utils)
 
     sinopsis_cube = SinopsisCube('A370_01', 'tests/test_run/A370_01_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
     # sinopsis_cube.plot_spectrum(25, 27, plot_error=False)

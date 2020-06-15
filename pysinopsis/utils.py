@@ -31,3 +31,17 @@ def calc_continuum_rms(wl, f_obs, f_syn, z, window_limits=(5500, 5700)):
 
     return continuum_rms
 
+
+def get_uncertainty(sinopsis_cube, sinopsis_property, x, y):
+
+    if sinopsis_property in ['Mb1', 'Mb2', 'Mb3', 'Mb4']:
+        print('Uncertainty in masses to be automated.')
+
+    else:
+        plus = sinopsis_cube.properties[sinopsis_property+'_M'][x, y] - \
+               sinopsis_cube.properties[sinopsis_property][x, y]
+        minus = sinopsis_cube.properties[sinopsis_property][x, y] - \
+                sinopsis_cube.properties[sinopsis_property+'_m'][x, y]
+
+        return plus, minus
+

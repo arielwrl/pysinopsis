@@ -46,7 +46,7 @@ def read_results_cube(output_cube_file):
         header_info[key] = output_cube.header[key]
 
     properties = OrderedDict()
-    for i in range(76):
+    for i in range(77):
         plane_key = 'PLANE%0.2d' % i
 
         properties[output_cube.header[plane_key]] = masked_array(output_cube.data[i], mask=output_cube.data[i] == -999)
@@ -131,6 +131,9 @@ class SinopsisCube:
 
         # Ages:
         self.age_bins = np.genfromtxt(sinopsis_directory + galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]
+        self.age_bins = np.append(0, self.age_bins)
+        self.age_bins_4 = np.genfromtxt(sinopsis_directory + galaxy_id + '.bin', skip_header=3)
+        self.age_bins_4 = np.append(0, self.age_bins_4)
 
         # SINOPSIS results:
         self.header_info, self.properties = read_results_cube(sinopsis_directory + galaxy_id + '_out.fits')
@@ -233,6 +236,9 @@ class SinopsisCube:
                          flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]), ax=ax_spectrum)
 
         sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals)
+
+        sfr = np.array([self.properties['sfr_'+str(i)][x, y] for i in range(1, 13)])
+        sinplot.plot_sfh(self.age_bins, sfr, ax=ax_sfh)
 
 
 if __name__ == '__main__':

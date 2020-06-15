@@ -7,6 +7,7 @@ Tools for plotting SINOPSIS output.
 
 """
 
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
@@ -165,4 +166,13 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None)
 
     ax.figure.colorbar(mappable=sinopsis_map, label=sinopsis_labels[sinopsis_property])
 
+
+def plot_sfh(age_bins, sfh_array, ax=None):
+
+    if ax is None:
+        ax = plt.gca()
+
+    bin_center = np.array([(age_bins[i]+age_bins[i+1])/2 for i in range(12)])
+
+    ax.scatter(np.log10(bin_center), sfh_array)
 

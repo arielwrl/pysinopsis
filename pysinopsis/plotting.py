@@ -135,8 +135,8 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
     if plot_legend:
         ax.legend()
 
-    ax.set_xlabel(spec_labels['wl'])
-    ax.set_ylabel(spec_labels['f_lambda'])
+    ax.set_xlabel(spec_labels['wl'], fontsize=12)
+    ax.set_ylabel(spec_labels['f_lambda'], fontsize=12)
 
 
 def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, ax=None):
@@ -146,8 +146,8 @@ def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, ax=None):
 
     ax.plot(wl, (f_obs-f_syn_cont)/f_syn_cont, color=res_color, lw=res_lw)
 
-    ax.set_ylabel(spec_labels['res'])
-    ax.set_xlabel(spec_labels['wl'])
+    ax.set_ylabel(spec_labels['res'], fontsize=12)
+    ax.set_xlabel(spec_labels['wl'], fontsize=12)
 
     ax.set_ylim(-0.35, 0.35)
 
@@ -159,7 +159,7 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None)
     if ax is None:
         ax = plt.gca()
 
-    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap)
+    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property].transpose(), cmap=cmap)
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')
@@ -175,4 +175,7 @@ def plot_sfh(age_bins, sfh_array, ax=None):
     bin_center = np.array([(age_bins[i]+age_bins[i+1])/2 for i in range(12)])
 
     ax.scatter(np.log10(bin_center), sfh_array)
+
+    ax.set_ylabel('SFR', fontsize=12)
+    ax.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
 

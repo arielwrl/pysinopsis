@@ -1,6 +1,7 @@
 """
 
 ariel@padova
+15/06/2020
 
 Script to plot SINOPSIS fits of each individual spaxel
 

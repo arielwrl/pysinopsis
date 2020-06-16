@@ -192,15 +192,16 @@ class SinopsisCube:
 
             return fit_details_table
 
-    def plot_map(self, sinopsis_property):
+    def plot_map(self, sinopsis_property, show_plot=True):
 
         plt.figure()
 
         sinplot.plot_sinopsis_map(self, sinopsis_property)
 
-        plt.show()
+        if show_plot:
+            plt.show()
 
-    def plot_spectrum(self, x, y, plot_error=True, plot_legend=True):
+    def plot_spectrum(self, x, y, plot_error=True, plot_legend=True, show_plot=True):
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
@@ -212,20 +213,23 @@ class SinopsisCube:
                          plot_error=plot_error, plot_legend=plot_legend,
                          flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]))
 
-        plt.show()
+        if show_plot:
+            plt.show()
 
-    def plot_fit_complete(self, x, y, figsize=(12, 6.5)):
+    def plot_fit_complete(self, x, y, figsize=(13.25, 8.5), out_file_name=None, out_format='png',
+                          show_plot=True):
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
 
         fig = plt.figure(figsize=figsize)
 
-        gs = gridspec.GridSpec(3, 4)
+        gs = gridspec.GridSpec(5, 5)
 
-        ax_spectrum = plt.subplot(gs[0:2, 0:3])
-        ax_residuals = plt.subplot(gs[2, 0:3], sharex=ax_spectrum)
-        ax_sfh = plt.subplot(gs[0:2, 3:4])
+        ax_spectrum = plt.subplot(gs[0:2, 0:5])
+        ax_residuals = plt.subplot(gs[2, 0:5], sharex=ax_spectrum)
+        ax_sfh = plt.subplot(gs[3:5, 0:2])
+        ax_map = plt.subplot(gs[3:5, 2:4])
 
         # Plotting fit and residuals:
         # FIXME: BUNIT conversion sort of hard-coded
@@ -238,6 +242,15 @@ class SinopsisCube:
         sfr = np.array([self.properties['sfr_'+str(i)][x, y] for i in range(1, 13)])
         sinplot.plot_sfh(self.age_bins, sfr, ax=ax_sfh)
 
+        # A map to show the spaxel:
+        # FIXME: Plotting map of total flux, did not think enough about this
+        reference_map = ax_map.imshow(np.log10(np.sum(self.f_obs, axis=0)).transpose(), cmap='Blues', origin='lower')
+        fig.colorbar(mappable=reference_map, ax=ax_map, label=r'$\log F_\lambda$')
+        ax_map.scatter(x, y, marker='x', s=80, c='g', label='x =' + str(x) + ', y =' + str(y))
+        ax_map.legend()
+        ax_map.set_xlabel('x', fontsize=12)
+        ax_map.set_ylabel('y', fontsize=12)
+
         # Annotating results:
         # FIXME: This code is hideous
         property_list = ['lwage', 'mwage', 'Av', 'Av_y']
@@ -248,14 +261,22 @@ class SinopsisCube:
                        for i in range(len(property_list))]
 
         for i in range(len(annotations)):
-            ax_residuals.annotate(annotations[i], xy=(0.775, 0.27-i*0.05), xycoords='figure fraction', fontsize=14)
+            ax_residuals.annotate(annotations[i], xy=(0.82, 0.3-i*0.05), xycoords='figure fraction', fontsize=12)
 
-        fig.subplots_adjust(top=0.956,
-                            bottom=0.089,
-                            left=0.063,
-                            right=0.987,
+        fig.subplots_adjust(top=0.98,
+                            bottom=0.06,
+                            left=0.06,
+                            right=0.99,
                             hspace=0.389,
-                            wspace=0.173)
+                            wspace=0.213)
+
+        if out_file_name is not None:
+            plt.savefig(out_file_name, format=out_format)
+
+        if show_plot:
+            plt.show()
+        else:
+            plt.close()
 
 
 if __name__ == '__main__':
@@ -267,3 +288,4 @@ if __name__ == '__main__':
     # sinopsis_cube.plot_spectrum(25, 27, plot_error=False)
     # sinopsis_cube.plot_map('SFR1')
     sinopsis_cube.plot_fit_complete(25, 27)
+

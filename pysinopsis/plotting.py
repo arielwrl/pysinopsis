@@ -159,7 +159,7 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None)
     if ax is None:
         ax = plt.gca()
 
-    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property].transpose(), cmap=cmap)
+    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap)
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')

@@ -7,10 +7,13 @@ Script to plot SINOPSIS fits of each individual spaxel
 
 """
 
+import matplotlib.pyplot as plt
 import seaborn as sns
 import itertools
 from pysinopsis.output import SinopsisCube
 import os
+
+plt.ioff()  # This has to be done when running on pycharm
 
 sns.set_style('whitegrid')
 

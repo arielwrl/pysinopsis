@@ -244,9 +244,10 @@ class SinopsisCube:
 
         # A map to show the spaxel:
         # FIXME: Plotting map of total flux, did not think enough about this
-        reference_map = ax_map.imshow(np.log10(np.sum(self.f_obs, axis=0)).transpose(), cmap='Blues', origin='lower')
+        # FIXME: Inverting x and y !!! Have to find a better solution for this
+        reference_map = ax_map.imshow(np.sum(self.f_obs, axis=0), cmap='Blues', origin='lower')
         fig.colorbar(mappable=reference_map, ax=ax_map, label=r'$\log F_\lambda$')
-        ax_map.scatter(x, y, marker='x', s=80, c='g', label='x =' + str(x) + ', y =' + str(y))
+        ax_map.scatter(y, x, marker='x', s=80, c='r', label='x =' + str(y) + ', y =' + str(x))
         ax_map.legend()
         ax_map.set_xlabel('x', fontsize=12)
         ax_map.set_ylabel('y', fontsize=12)

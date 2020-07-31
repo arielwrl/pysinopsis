@@ -74,7 +74,7 @@ def read_eqw_cube(eqw_cube_file):
     eqw_cube = fits.open(eqw_cube_file)[0]
 
     eqws = OrderedDict()
-    for i in range(31):
+    for i in range(30):
         plane_key = 'PLANE%0.2d' % i  # FIXME: Hard-coded!
 
         eqws[eqw_cube.header[plane_key]] = masked_array(eqw_cube.data[i], mask=eqw_cube.data[i] == -999)
@@ -285,8 +285,8 @@ if __name__ == '__main__':
     importlib.reload(sinplot)
     importlib.reload(utils)
 
-    sinopsis_cube = SinopsisCube('A370_01', 'tests/test_run/A370_01_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
+    sinopsis_cube = SinopsisCube('A2744_06', 'tests/test_run/A2744_06_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
     # sinopsis_cube.plot_spectrum(25, 27, plot_error=False)
     # sinopsis_cube.plot_map('SFR1')
-    sinopsis_cube.plot_fit_complete(25, 27)
+    sinopsis_cube.plot_fit_complete(54, 29)
 

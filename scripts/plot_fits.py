@@ -18,7 +18,7 @@ plt.ioff()  # This has to be done when running on pycharm
 sns.set_style('whitegrid')
 
 galaxy_id = 'A2744_06'
-sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/A2744_06/'
+sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/A2744_06_updated/'
 obs_file = sinopsis_dir + 'A2744_06_DATACUBE_FINAL_v1_ec.fits'
 plot_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/plots/'
 plot_format = 'png'

@@ -10,7 +10,7 @@
 ##########################################################################################
 #######               #######
 ###		INPUT CATALOG
-Name of the input catalog := A370_01.cat
+Name of the input catalog := A2744_06.cat
 # Allowed keywords: 'basic', 'advanced', 'eqw'
 Type of input catalog := basic
 ##########################################################################################
@@ -48,12 +48,12 @@ Extinction curve to be adopted := MW
 ##########################################################################################
 #######                                  #######
 ###	    CHARACTERISTICS OF THE MODELLING
-# Allowed keywords: 'jm', 'cb19'
-SSP set := cb19
+# Allowed keywords: 'jm', 'cb20'
+SSP set := cb20
 # Allowed keywords: 'ff', 'dexp', 'logn'
 Star formation history pattern := ff
 # Allowed keywords: 'default', custom filename
-File with the star formation history parameters := default 
+File with the star formation history parameters := ssp_setup_ff_cb19.dat 
 Number of different metallicity values := 3
 Metallicity values to be used := 0.004 0.02 0.04
 Smooth SSP spectra to the observed spectra resolution := no
@@ -63,7 +63,7 @@ Set maximum age of the stellar populations := 20
 ##########################################################################################
 #######                             #######
 ###		UNCERTAINTIES DETERMINATION
-Number of separate runs for each metallicity value := 1
+Number of separate runs for each metallicity value := 11
 Chi2 threshold value to calculate uncertainties := 3.0
 ##########################################################################################
 #######         #######

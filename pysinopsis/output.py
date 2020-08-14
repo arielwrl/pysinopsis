@@ -131,7 +131,7 @@ class SinopsisCube:
         self.sinopsis_directory = sinopsis_directory
 
         # Ages:
-        self.age_bins = np.genfromtxt(sinopsis_directory + galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]
+        self.age_bins = np.genfromtxt(sinopsis_directory + galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]  #FIXME: Double-check me
         self.age_bins = np.append(0, self.age_bins)
         self.age_bins_4 = np.genfromtxt(sinopsis_directory + galaxy_id + '.bin', skip_header=3)
         self.age_bins_4 = np.append(0, self.age_bins_4)
@@ -280,13 +280,44 @@ class SinopsisCube:
             plt.close()
 
 
+class Sinopsis1D:
+    """
+
+    Reads SINOPSIS output for a catalog of 1d spectra into a python object.
+
+    input:
+    -----------
+    sinopsis_directory: Directory with SINOPSIS files (must end with /)
+        type: str
+
+    """
+
+    def __init__(self, sinopsis_directory):
+        self.catalog_in = Table.read(sinopsis_directory + 'catalog.in', data_start=1, format='ascii')
+        self.catalog_out = Table.read(sinopsis_directory + 'catalog.out', format='ascii')
+        self.catalog_mag = Table.read(sinopsis_directory + 'catalog.mag', format='ascii')
+        self.catalog_eqw = Table.read(sinopsis_directory + 'catalog.eqw', format='ascii')
+        self.catalog_chi = Table.read(sinopsis_directory + 'catalog.chi', format='ascii')
+
+        self.catalog_sfh = np.full(fill_value=np.nan, shape=(len(self.catalog_in), 12))
+
+        for i in range(len(self.catalog_in)):
+            self.catalog_sfh[i] = np.array([self.catalog_out['sfr_'+str(j)][i] for j in range(1, 13)])
+
+        self.age_bins = np.genfromtxt(sinopsis_directory + 'catalog.log', skip_header=21, skip_footer=5)[:, 0]
+        self.age_bins = np.append(0, self.age_bins)
+        self.age_bins_4 = np.genfromtxt(sinopsis_directory + 'catalog.bin', skip_header=3)
+        self.age_bins_4 = np.append(0, self.age_bins_4)
+
+
 if __name__ == '__main__':
     import importlib
     importlib.reload(sinplot)
     importlib.reload(utils)
 
-    sinopsis_cube = SinopsisCube('A2744_06', 'tests/test_run/A2744_06_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
+    # sinopsis_cube = SinopsisCube('A2744_06', 'tests/test_run/A2744_06_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
     # sinopsis_cube.plot_spectrum(25, 27, plot_error=False)
     # sinopsis_cube.plot_map('SFR1')
-    sinopsis_cube.plot_fit_complete(54, 29)
+    # sinopsis_cube.plot_fit_complete(54, 29)
 
+    sinopsis_1d = Sinopsis1D('tests/test1d/')

@@ -209,9 +209,15 @@ class SinopsisCube:
         plt.figure()
 
         # FIXME : BUNIT conversion sort of hard-coded
+        # FIXME : BUNIT is in a diferent place on the header in the 5x5 and not 5x5 cubes, it is also in a different
+        #  format, with ** indicating the power of 10, making it impossible to convert directly to float,
+        #  I'm working arround the issue by splitting strings and isolating the power of 10
+
+        flux_power = float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
+
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
                          plot_error=plot_error, plot_legend=plot_legend,
-                         flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]))
+                         flux_unit=10**flux_power)
 
         if show_plot:
             plt.show()
@@ -232,9 +238,12 @@ class SinopsisCube:
         ax_map = plt.subplot(gs[3:5, 2:4])
 
         # Plotting fit and residuals:
-        # FIXME: BUNIT conversion sort of hard-coded
+        # FIXME: BUNIT conversion sort of hard-coded, same problem as in the plot_spectrum module
+
+        flux_power = float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
+
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
-                         flux_unit=float(self.obs_header['primary']['BUNIT_JA'][0: 5]), ax=ax_spectrum)
+                         flux_unit=10**flux_power, ax=ax_spectrum)
 
         sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals)
 
@@ -244,7 +253,7 @@ class SinopsisCube:
 
         # A map to show the spaxel:
         # FIXME: Plotting map of total flux, did not think enough about this
-        # FIXME: Inverting x and y !!! Have to find a better solution for this
+        # FIXME: Inverting x and y !!! Have to find a better solution for this (numpy works in line, column not x, y)
         reference_map = ax_map.imshow(np.sum(self.f_obs, axis=0), cmap='Blues', origin='lower')
         fig.colorbar(mappable=reference_map, ax=ax_map, label=r'$\log F_\lambda$')
         ax_map.scatter(y, x, marker='x', s=80, c='r', label='x =' + str(y) + ', y =' + str(x))
@@ -315,9 +324,9 @@ if __name__ == '__main__':
     importlib.reload(sinplot)
     importlib.reload(utils)
 
-    # sinopsis_cube = SinopsisCube('A2744_06', 'tests/test_run/A2744_06_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
-    # sinopsis_cube.plot_spectrum(25, 27, plot_error=False)
-    # sinopsis_cube.plot_map('SFR1')
-    # sinopsis_cube.plot_fit_complete(54, 29)
+    sinopsis_cube = SinopsisCube('A2744_06', 'tests/test_run/A2744_06_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
+    sinopsis_cube.plot_spectrum(54, 29, plot_error=False)
+    sinopsis_cube.plot_map('SFR1')
+    sinopsis_cube.plot_fit_complete(54, 29)
 
-    sinopsis_1d = Sinopsis1D('tests/test1d/')
+    # sinopsis_1d = Sinopsis1D('tests/test1d/')

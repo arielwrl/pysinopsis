@@ -21,6 +21,48 @@ import pysinopsis.plotting as sinplot
 from pysinopsis import utils
 
 
+def read_config(sinopsis_dir):
+    """
+
+    :param sinopsis_dir:
+    :return: config dictionary
+    """
+
+    config_file = np.array(open(sinopsis_dir+'config.sin', 'rb').readlines()).astype(str)
+
+    config_dict = {'input_catalog': config_file[12].split()[-1],
+                   'input_type': config_file[19].split()[-1],
+                   'sinopsis_dir': sinopsis_dir
+                   }
+
+    if config_dict['input_type'] == 'cube':
+        config_dict['galaxy_id'] = config_dict['input_catalog'].split('.')[0]
+
+    return config_dict
+
+
+def read_sinopsis_catalog(sinopsis_dir, input_catalog_file, input_type):
+    """
+
+    :param sinopsis_dir:
+    :param input_catalog_file:
+    :param input_type:
+    :return:
+    """
+
+    if input_type == 'cube':
+
+        input_catalog = np.array(open(sinopsis_dir+input_catalog_file, 'rb').readlines()).astype(str)
+
+        sinopsis_catalog = {'obs_file': input_catalog[0].split()[0],
+                            'abs_mask_file': input_catalog[1].split()[0],
+                            'em_mask_file': input_catalog[1].split()[1],
+                            'z': float(input_catalog[2])
+                            }
+
+    return sinopsis_catalog
+
+
 def read_results_cube(output_cube_file):
     """
 
@@ -124,29 +166,35 @@ class SinopsisCube:
 
     """
 
-    def __init__(self, galaxy_id, obs_file, sinopsis_directory='./'):
+    def __init__(self, sinopsis_directory='./'):
 
-        self.galaxy_id = galaxy_id
-        self.obs_file = obs_file
+        config = read_config(sinopsis_directory)
+        catalog = read_sinopsis_catalog(sinopsis_directory, config['input_catalog'], input_type='cube')
+
+        self.config = config
+        self.catalog = catalog
+
+        self.galaxy_id = config['galaxy_id']
+        self.obs_file = catalog['obs_file']
         self.sinopsis_directory = sinopsis_directory
 
         # Ages:
-        self.age_bins = np.genfromtxt(sinopsis_directory + galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]  #FIXME: Double-check me
+        self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]  #FIXME: Double-check me
         self.age_bins = np.append(0, self.age_bins)
-        self.age_bins_4 = np.genfromtxt(sinopsis_directory + galaxy_id + '.bin', skip_header=3)
+        self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.bin', skip_header=3)
         self.age_bins_4 = np.append(0, self.age_bins_4)
 
         # SINOPSIS results:
-        self.header_info, self.properties = read_results_cube(sinopsis_directory + galaxy_id + '_out.fits')
+        self.header_info, self.properties = read_results_cube(sinopsis_directory + self.galaxy_id + '_out.fits')
 
         # Equivalend widths:
-        self.eqw = read_eqw_cube(sinopsis_directory + galaxy_id + '_eqw.fits')
+        self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
 
         # Magnitudes:
-        self.mag = read_mag_cube(sinopsis_directory + galaxy_id + '_mag.fits')
+        self.mag = read_mag_cube(sinopsis_directory + self.galaxy_id + '_mag.fits')
 
         # Observed cube:
-        obs_cube = fits.open(obs_file)
+        obs_cube = fits.open(self.sinopsis_directory+self.obs_file)
 
         self.obs_header = {'primary': obs_cube[0].header,
                            'flux': obs_cube[1].header,
@@ -158,8 +206,8 @@ class SinopsisCube:
         self.cube_shape = self.f_obs.shape
 
         # Model cube:
-        model_cube = fits.open(sinopsis_directory + galaxy_id + '_modelcube.fits')[0]
-        model_cube_nolines = fits.open(sinopsis_directory + galaxy_id + '_modelcube_nolines.fits')[0]
+        model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]
+        model_cube_nolines = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube_nolines.fits')[0]
 
         self.f_syn = masked_array(model_cube.data, mask=model_cube.data == -999)
         self.f_syn_cont = masked_array(model_cube_nolines.data, mask=model_cube.data == -999)

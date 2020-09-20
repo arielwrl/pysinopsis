@@ -21,7 +21,7 @@ import pysinopsis.plotting as sinplot
 from pysinopsis import utils
 
 
-def read_config(sinopsis_dir):
+def read_config(sinopsis_dir='./'):
     """
 
     :param sinopsis_dir:
@@ -32,7 +32,8 @@ def read_config(sinopsis_dir):
 
     config_dict = {'input_catalog': config_file[12].split()[-1],
                    'input_type': config_file[19].split()[-1],
-                   'sinopsis_dir': sinopsis_dir
+                   'sinopsis_dir': sinopsis_dir,
+                   'sfh_type': config_file[59].split()[-1],
                    }
 
     if config_dict['input_type'] == 'cube':
@@ -56,14 +57,17 @@ def read_sinopsis_catalog(sinopsis_dir, input_catalog_file, input_type):
 
         sinopsis_catalog = {'obs_file': input_catalog[0].split()[0],
                             'abs_mask_file': input_catalog[1].split()[0],
-                            'em_mask_file': input_catalog[1].split()[1],
                             'z': float(input_catalog[2])
                             }
+        try:
+            sinopsis_catalog['em_mask_file'] = input_catalog[1].split()[1]
+        except Exception:
+            print('No emission line mask')
 
-    return sinopsis_catalog
+        return sinopsis_catalog
 
 
-def read_results_cube(output_cube_file):
+def read_results_cube(output_cube_file, sfh_type):
     """
 
     Reads SINOPSIS output cube into a dictionary of masked arrays.
@@ -89,7 +93,13 @@ def read_results_cube(output_cube_file):
         header_info[key] = output_cube.header[key]
 
     properties = OrderedDict()
-    for i in range(77):
+
+    if sfh_type == 'ff':
+        len_cube = 77
+    if sfh_type == 'dexp':
+        len_cube = 67
+
+    for i in range(len_cube):
         plane_key = 'PLANE%0.2d' % i
 
         properties[output_cube.header[plane_key]] = masked_array(output_cube.data[i], mask=output_cube.data[i] == -999)
@@ -178,14 +188,20 @@ class SinopsisCube:
         self.obs_file = catalog['obs_file']
         self.sinopsis_directory = sinopsis_directory
 
-        # Ages:
-        self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]  #FIXME: Double-check me
-        self.age_bins = np.append(0, self.age_bins)
-        self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.bin', skip_header=3)
-        self.age_bins_4 = np.append(0, self.age_bins_4)
-
         # SINOPSIS results:
-        self.header_info, self.properties = read_results_cube(sinopsis_directory + self.galaxy_id + '_out.fits')
+        self.header_info, self.properties = read_results_cube(sinopsis_directory + self.galaxy_id + '_out.fits',
+                                                              sfh_type=self.config['sfh_type'])
+
+        # Ages:
+        if self.config['sfh_type'] == 'ff':
+            self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]  #FIXME: Double-check me
+            self.age_bins = np.append(0, self.age_bins)
+            self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.bin', skip_header=3)
+            self.age_bins_4 = np.append(0, self.age_bins_4)
+
+            self.age_bin_center = np.array([(self.age_bins[i] + self.age_bins[i + 1]) / 2 for i in range(12)])
+
+            self.sfh = np.array([self.properties['sfr_'+str(i)] for i in range(1, 13)])
 
         # Equivalend widths:
         self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
@@ -296,8 +312,8 @@ class SinopsisCube:
         sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals)
 
         # Plotting SFH:
-        sfr = np.array([self.properties['sfr_'+str(i)][x, y] for i in range(1, 13)])
-        sinplot.plot_sfh(self.age_bins, sfr, ax=ax_sfh)
+        if self.config['sfh_type'] == 'ff':
+            sinplot.plot_sfh(self.age_bin_center, self.sfh[:, x, y], ax=ax_sfh)
 
         # A map to show the spaxel:
         # FIXME: Plotting map of total flux, did not think enough about this

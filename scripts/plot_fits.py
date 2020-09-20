@@ -17,17 +17,16 @@ plt.ioff()  # This has to be done when running on pycharm
 
 sns.set_style('whitegrid')
 
-galaxy_id = 'A2744_06'
-sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/A2744_06_5x5/'
-obs_file = sinopsis_dir + 'A2744_06_DATACUBE_FINAL_v1_ec_5x5.fits'
-plot_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/plots/'
+galaxy_id = 'A2744_02'
+sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/PSBs/SINOPSIS/A2744_02/'
+plot_dir = '/home/ariel/Workspace/GASP/High-z/PSBs/plots/'
 plot_format = 'png'
 
 if galaxy_id not in os.listdir(plot_dir):
     print(plot_dir+galaxy_id, 'not found, creating directory...')
     os.makedirs(plot_dir+galaxy_id)
 
-sinopsis_cube = SinopsisCube(galaxy_id, obs_file, sinopsis_dir)
+sinopsis_cube = SinopsisCube(sinopsis_dir)
 
 for i, j in itertools.product(range(sinopsis_cube.cube_shape[1]), range(sinopsis_cube.cube_shape[2])):
 

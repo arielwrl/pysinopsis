@@ -164,7 +164,8 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
 
-    ax.figure.colorbar(mappable=sinopsis_map, label=sinopsis_labels[sinopsis_property])
+    cb = ax.figure.colorbar(mappable=sinopsis_map)
+    cb.set_label(sinopsis_labels[sinopsis_property], fontsize=20)
 
 
 def plot_sfh(age_bin_center, sfh_array, ax=None):

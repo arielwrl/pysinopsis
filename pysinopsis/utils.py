@@ -45,3 +45,33 @@ def get_uncertainty(sinopsis_cube, sinopsis_property, x, y):
 
         return plus, minus
 
+
+def initial_burst(t, t_u, n1, tau_i):
+    """
+
+    Equation (2) in page 29 of SINOPSIS manual, version 1.6.7
+
+    """
+
+    sfr = (((t_u - t) / t_u) ** n1) * np.exp(-((t_u-t)/(tau_i*t_u)))
+
+    return sfr
+
+
+def late_burst(t, m_b, t_b, n2, tau_b):
+
+    sfr = m_b * (((t_b - t) / t_b) ** n2) * np.exp(-((t_b-t)/(tau_b*t_b)))
+
+    return sfr
+
+
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+
+    t = np.linspace(1e6, 1.4e9, 1000)
+    initial = initial_burst(t, t_u=1.4e9, n1=0.01, tau_i=0.05)
+    plt.plot(np.log10(t), initial)
+
+    t = np.linspace(1.e6, 1.e8, 1000)
+    burst = late_burst(t, m_b=0.1, t_b=1.0e8, n2=0.1, tau_b=1)
+    plt.plot(np.log10(t), burst)

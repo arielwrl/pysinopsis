@@ -95,9 +95,9 @@ def read_results_cube(output_cube_file, sfh_type):
     properties = OrderedDict()
 
     if sfh_type == 'ff':
-        len_cube = 77
+        len_cube = 89
     if sfh_type == 'dexp':
-        len_cube = 67
+        len_cube = 74
 
     for i in range(len_cube):
         plane_key = 'PLANE%0.2d' % i
@@ -209,6 +209,9 @@ class SinopsisCube:
         # Magnitudes:
         self.mag = read_mag_cube(sinopsis_directory + self.galaxy_id + '_mag.fits')
 
+        # Mask:
+        self.mask = fits.open(sinopsis_directory + self.galaxy_id + '_fitmask.fits')[0].data
+
         # Observed cube:
         obs_cube = fits.open(self.sinopsis_directory+self.obs_file)
 
@@ -314,6 +317,24 @@ class SinopsisCube:
         # Plotting SFH:
         if self.config['sfh_type'] == 'ff':
             sinplot.plot_sfh(self.age_bin_center, self.sfh[:, x, y], ax=ax_sfh)
+
+        if self.config['sfh_type'] == 'dexp':
+            t_initial = np.linspace(1e6, 1.4e9, 1000)
+            t_late_burst = np.linspace(1e6, self.properties['Tb'][x, y], 1000)
+
+            initial = utils.initial_burst(t_initial, t_u=1.4e9, n1=self.properties['n1'][x, y],
+                                          tau_i=self.properties['tau_i'][x, y])
+            late_burst = utils.late_burst(t_late_burst, m_b=self.properties['Mb'][x, y],
+                                          t_b=self.properties['Tb'][x, y], n2=self.properties['n2'][x, y],
+                                          tau_b=self.properties['tau_b'][x, y])
+
+            ax_sfh.plot(np.log10(t_initial), initial, color='red')
+            ax_sfh.plot(np.log10(t_late_burst), late_burst, color='blue')
+
+            ax_sfh.set_ylabel('SFR', fontsize=12)
+            ax_sfh.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
+
+            ax_sfh.set_xlim(np.log10(1e6), np.log10(1.4e9))
 
         # A map to show the spaxel:
         # FIXME: Plotting map of total flux, did not think enough about this

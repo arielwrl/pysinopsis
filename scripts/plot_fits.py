@@ -18,8 +18,8 @@ plt.ioff()  # This has to be done when running on pycharm
 sns.set_style('whitegrid')
 
 galaxy_id = 'A2744_02'
-sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/PSBs/SINOPSIS/A2744_02/'
-plot_dir = '/home/ariel/Workspace/GASP/High-z/PSBs/plots/'
+sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/A2744_06_ztest/'
+plot_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/plots/'
 plot_format = 'png'
 
 if galaxy_id not in os.listdir(plot_dir):

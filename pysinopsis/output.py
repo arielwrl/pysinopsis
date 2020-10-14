@@ -28,7 +28,7 @@ def read_config(sinopsis_dir='./'):
     :return: config dictionary
     """
 
-    config_file = np.array(open(sinopsis_dir+'config.sin', 'rb').readlines()).astype(str)
+    config_file = np.array(open(sinopsis_dir + 'config.sin', 'rb').readlines()).astype(str)
 
     config_dict = {'input_catalog': config_file[12].split()[-1],
                    'input_type': config_file[19].split()[-1],
@@ -53,7 +53,7 @@ def read_sinopsis_catalog(sinopsis_dir, input_catalog_file, input_type):
 
     if input_type == 'cube':
 
-        input_catalog = np.array(open(sinopsis_dir+input_catalog_file, 'rb').readlines()).astype(str)
+        input_catalog = np.array(open(sinopsis_dir + input_catalog_file, 'rb').readlines()).astype(str)
 
         sinopsis_catalog = {'obs_file': input_catalog[0].split()[0],
                             'abs_mask_file': input_catalog[1].split()[0],
@@ -83,6 +83,7 @@ def read_results_cube(output_cube_file, sfh_type):
 
     """
 
+    global len_cube
     output_cube = fits.open(output_cube_file)[0]
 
     header_info_keys = ['SIMPLE', 'BITPIX', 'NAXIS', 'NAXIS1', 'NAXIS2', 'NAXIS3', 'EXTEND', 'CRVAL1', 'CRVAL2',
@@ -171,9 +172,6 @@ class SinopsisCube:
     sinopsis_directory: Directory with SINOPSIS files (must end with /)
         type: str
 
-    galaxy_id: ID of the galaxy, used to read output files
-        type: str
-
     """
 
     def __init__(self, sinopsis_directory='./'):
@@ -194,17 +192,19 @@ class SinopsisCube:
 
         # Ages:
         if self.config['sfh_type'] == 'ff':
-            self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22, skip_footer=6)[:, 0]  #FIXME: Double-check me
+            self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22,
+                                          skip_footer=6)[:, 0]  # FIXME: Double-check me
             self.age_bins = np.append(0, self.age_bins)
             self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.bin', skip_header=3)
             self.age_bins_4 = np.append(0, self.age_bins_4)
 
             self.age_bin_center = np.array([(self.age_bins[i] + self.age_bins[i + 1]) / 2 for i in range(12)])
 
-            self.sfh = np.array([self.properties['sfr_'+str(i)] for i in range(1, 13)])
+            self.sfh = np.array([self.properties['sfr_' + str(i)] for i in range(1, 13)])
+            self.sfh = np.ma.masked_array(self.sfh, mask=self.sfh == -999)
 
         # Equivalend widths:
-        self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
+        # self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
 
         # Magnitudes:
         self.mag = read_mag_cube(sinopsis_directory + self.galaxy_id + '_mag.fits')
@@ -213,7 +213,7 @@ class SinopsisCube:
         self.mask = fits.open(sinopsis_directory + self.galaxy_id + '_fitmask.fits')[0].data
 
         # Observed cube:
-        obs_cube = fits.open(self.sinopsis_directory+self.obs_file)
+        obs_cube = fits.open(self.sinopsis_directory + self.obs_file)
 
         self.obs_header = {'primary': obs_cube[0].header,
                            'flux': obs_cube[1].header,
@@ -249,15 +249,23 @@ class SinopsisCube:
         else:
 
             fname_prefix = self.obs_file.split('.')[0]
-            fname_fit_details = fname_prefix + '.%0.4d_%0.4d.out' % (x+1, y+1)  # FIXME: 0- or 1-indexed?
+            fname_fit_details = self.sinopsis_directory + fname_prefix + '.%0.4d_%0.4d.out' % (
+            y + 1, x + 1)  # FIXME: 0- or 1-indexed?
 
             n_features = open(fname_fit_details, 'rt').read().splitlines()[0].split()[0]
             n_features = int(n_features)
 
-            fit_details_table = Table.read(fname_fit_details, format='ascii', header_start=1,
-                                           data_end=n_features+2)
+            ssp_results = np.genfromtxt(fname_fit_details, skip_header=23)
 
-            return fit_details_table
+            age, sfr = np.log10(ssp_results[:, 0]), ssp_results[:, 3]
+
+            return age, sfr
+
+            # fit_details_table = Table.read(fname_fit_details, format='ascii', header_start=1,
+            #                                data_end=n_features+2)
+
+            # ssp_results = Table.read(fname_fit_details, format='ascii', header_start=23,
+            #                          data_start=24)
 
     def plot_map(self, sinopsis_property, show_plot=True):
 
@@ -282,9 +290,9 @@ class SinopsisCube:
 
         flux_power = float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
 
-        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
-                         plot_error=plot_error, plot_legend=plot_legend,
-                         flux_unit=10**flux_power)
+        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y],
+                         self.f_err[:, x, y], plot_error=plot_error, plot_legend=plot_legend,
+                         flux_unit=10 ** flux_power, z=self.catalog['z'])
 
         if show_plot:
             plt.show()
@@ -309,8 +317,8 @@ class SinopsisCube:
 
         flux_power = float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
 
-        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y], self.f_err[:, x, y],
-                         flux_unit=10**flux_power, ax=ax_spectrum)
+        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y],
+                         self.f_err[:, x, y], flux_unit=10 ** flux_power, ax=ax_spectrum, z=self.catalog['z'])
 
         sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals)
 
@@ -319,22 +327,29 @@ class SinopsisCube:
             sinplot.plot_sfh(self.age_bin_center, self.sfh[:, x, y], ax=ax_sfh)
 
         if self.config['sfh_type'] == 'dexp':
-            t_initial = np.linspace(1e6, 1.4e9, 1000)
-            t_late_burst = np.linspace(1e6, self.properties['Tb'][x, y], 1000)
+            age, sfr = self.fit_details(x, y)
 
-            initial = utils.initial_burst(t_initial, t_u=1.4e9, n1=self.properties['n1'][x, y],
-                                          tau_i=self.properties['tau_i'][x, y])
-            late_burst = utils.late_burst(t_late_burst, m_b=self.properties['Mb'][x, y],
-                                          t_b=self.properties['Tb'][x, y], n2=self.properties['n2'][x, y],
-                                          tau_b=self.properties['tau_b'][x, y])
+            ax_sfh.plot(age, sfr)
 
-            ax_sfh.plot(np.log10(t_initial), initial, color='red')
-            ax_sfh.plot(np.log10(t_late_burst), late_burst, color='blue')
-
-            ax_sfh.set_ylabel('SFR', fontsize=12)
             ax_sfh.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
+            ax_sfh.set_ylabel('SFR', fontsize=12)
 
-            ax_sfh.set_xlim(np.log10(1e6), np.log10(1.4e9))
+        #     t_initial = np.linspace(1e6, 1.4e9, 1000)
+        #     t_late_burst = np.linspace(1e6, self.properties['Tb'][x, y], 1000)
+        #
+        #     initial = utils.initial_burst(t_initial, t_u=1.4e9, n1=self.properties['n1'][x, y],
+        #                                   tau_i=self.properties['tau_i'][x, y])
+        #     late_burst = utils.late_burst(t_late_burst, m_b=self.properties['Mb'][x, y],
+        #                                   t_b=self.properties['Tb'][x, y], n2=self.properties['n2'][x, y],
+        #                                   tau_b=self.properties['tau_b'][x, y])
+        #
+        #     ax_sfh.plot(np.log10(t_initial), initial, color='red')
+        #     ax_sfh.plot(np.log10(t_late_burst), late_burst, color='blue')
+        #
+        #     ax_sfh.set_ylabel('SFR', fontsize=12)
+        #     ax_sfh.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
+        #
+        #     ax_sfh.set_xlim(np.log10(1e6), np.log10(1.4e9))
 
         # A map to show the spaxel:
         # FIXME: Plotting map of total flux, did not think enough about this
@@ -356,7 +371,7 @@ class SinopsisCube:
                        for i in range(len(property_list))]
 
         for i in range(len(annotations)):
-            ax_residuals.annotate(annotations[i], xy=(0.82, 0.3-i*0.05), xycoords='figure fraction', fontsize=12)
+            ax_residuals.annotate(annotations[i], xy=(0.82, 0.3 - i * 0.05), xycoords='figure fraction', fontsize=12)
 
         fig.subplots_adjust(top=0.98,
                             bottom=0.06,
@@ -396,7 +411,7 @@ class Sinopsis1D:
         self.catalog_sfh = np.full(fill_value=np.nan, shape=(len(self.catalog_in), 12))
 
         for i in range(len(self.catalog_in)):
-            self.catalog_sfh[i] = np.array([self.catalog_out['sfr_'+str(j)][i] for j in range(1, 13)])
+            self.catalog_sfh[i] = np.array([self.catalog_out['sfr_' + str(j)][i] for j in range(1, 13)])
 
         self.age_bins = np.genfromtxt(sinopsis_directory + 'catalog.log', skip_header=21, skip_footer=5)[:, 0]
         self.age_bins = np.append(0, self.age_bins)
@@ -406,10 +421,11 @@ class Sinopsis1D:
 
 if __name__ == '__main__':
     import importlib
+
     importlib.reload(sinplot)
     importlib.reload(utils)
 
-    sinopsis_cube = SinopsisCube('A2744_06', 'tests/test_run/A2744_06_DATACUBE_FINAL_v1_ec.fits', 'tests/test_run/')
+    sinopsis_cube = SinopsisCube('tests/test_run/')
     sinopsis_cube.plot_spectrum(54, 29, plot_error=False)
     sinopsis_cube.plot_map('SFR1')
     sinopsis_cube.plot_fit_complete(54, 29)

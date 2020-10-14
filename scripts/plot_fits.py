@@ -18,15 +18,17 @@ plt.ioff()  # This has to be done when running on pycharm
 sns.set_style('whitegrid')
 
 galaxy_id = 'A2744_02'
-sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/A2744_06_ztest/'
-plot_dir = '/home/ariel/Workspace/GASP/High-z/SINOPSIS/plots/'
+sinopsis_dir = '/home/ariel/Workspace/GASP/High-z/PSBs/SINOPSIS/A2744_02/'
+plot_dir = '/home/ariel/Workspace/GASP/High-z/PSBs/plots/'
 plot_format = 'png'
+
+sinopsis_cube = SinopsisCube(sinopsis_dir)
+
 
 if galaxy_id not in os.listdir(plot_dir):
     print(plot_dir+galaxy_id, 'not found, creating directory...')
     os.makedirs(plot_dir+galaxy_id)
 
-sinopsis_cube = SinopsisCube(sinopsis_dir)
 
 for i, j in itertools.product(range(sinopsis_cube.cube_shape[1]), range(sinopsis_cube.cube_shape[2])):
 
@@ -40,4 +42,3 @@ for i, j in itertools.product(range(sinopsis_cube.cube_shape[1]), range(sinopsis
         print('Plotting spaxel to', plot_file_name)
 
     sinopsis_cube.plot_fit_complete(i, j, out_file_name=plot_file_name, out_format=plot_format, show_plot=False)
-

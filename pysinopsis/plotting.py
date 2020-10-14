@@ -97,7 +97,7 @@ spec_labels = {'wl': r'$\lambda \, \mathrm{[\AA]}$',
 
 
 def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True, plot_legend=True, flux_unit=1,
-             obs_color='k', syn_color='b', syn_cont_color='g', obs_lw=0.5, syn_lw=1.5):
+             obs_color='k', syn_color='b', syn_cont_color='g', obs_lw=0.5, syn_lw=1.5, z=0):
     """
 
     FIXME: Doc me
@@ -125,12 +125,13 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
     if ax is None:
         ax = plt.gca()
 
-    ax.plot(wl, flux_unit * f_obs, color=obs_color, lw=obs_lw, label='Observed Spectrum')
-    ax.plot(wl, flux_unit * f_syn, color=syn_color, lw=syn_lw, label='Synthetic Spectrum')
-    ax.plot(wl, flux_unit * f_syn_cont, color=syn_cont_color, lw=syn_lw, label='Synthetic Spectrum (Continuum)')
+    ax.plot(wl / (1+z), flux_unit * f_obs * (1+z), color=obs_color, lw=obs_lw, label='Observed Spectrum')
+    ax.plot(wl / (1+z), flux_unit * f_syn * (1+z), color=syn_color, lw=syn_lw, label='Synthetic Spectrum')
+    ax.plot(wl / (1+z), flux_unit * f_syn_cont * (1+z), color=syn_cont_color, lw=syn_lw,
+            label='Synthetic Spectrum (Continuum)')
 
     if plot_error:
-        ax.plot(wl, flux_unit * f_err, '--r', label='Error')
+        ax.plot(wl, flux_unit * f_err * (1+z), '--r', label='Error')
 
     if plot_legend:
         ax.legend()
@@ -159,7 +160,7 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None)
     if ax is None:
         ax = plt.gca()
 
-    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap)
+    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap, origin='lower')
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')

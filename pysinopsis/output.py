@@ -320,7 +320,8 @@ class SinopsisCube:
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y],
                          self.f_err[:, x, y], flux_unit=10 ** flux_power, ax=ax_spectrum, z=self.catalog['z'])
 
-        sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals)
+        sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals,
+                               z=self.catalog['z'])
 
         # Plotting SFH:
         if self.config['sfh_type'] == 'ff':
@@ -334,21 +335,18 @@ class SinopsisCube:
             ax_sfh.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
             ax_sfh.set_ylabel('SFR', fontsize=12)
 
+        # FIXME: A problem with the units prevents reconstruction of the parametric SFHs
         #     t_initial = np.linspace(1e6, 1.4e9, 1000)
         #     t_late_burst = np.linspace(1e6, self.properties['Tb'][x, y], 1000)
-        #
         #     initial = utils.initial_burst(t_initial, t_u=1.4e9, n1=self.properties['n1'][x, y],
         #                                   tau_i=self.properties['tau_i'][x, y])
         #     late_burst = utils.late_burst(t_late_burst, m_b=self.properties['Mb'][x, y],
         #                                   t_b=self.properties['Tb'][x, y], n2=self.properties['n2'][x, y],
         #                                   tau_b=self.properties['tau_b'][x, y])
-        #
         #     ax_sfh.plot(np.log10(t_initial), initial, color='red')
         #     ax_sfh.plot(np.log10(t_late_burst), late_burst, color='blue')
-        #
         #     ax_sfh.set_ylabel('SFR', fontsize=12)
         #     ax_sfh.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
-        #
         #     ax_sfh.set_xlim(np.log10(1e6), np.log10(1.4e9))
 
         # A map to show the spaxel:

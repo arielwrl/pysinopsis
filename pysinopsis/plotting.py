@@ -102,6 +102,7 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
 
     FIXME: Doc me
 
+    :param z:
     :param syn_lw:
     :param obs_lw:
     :param syn_cont_color:
@@ -131,7 +132,7 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
             label='Synthetic Spectrum (Continuum)')
 
     if plot_error:
-        ax.plot(wl, flux_unit * f_err * (1+z), '--r', label='Error')
+        ax.plot(wl / (1+z), flux_unit * f_err * (1+z), '--r', label='Error')
 
     if plot_legend:
         ax.legend()
@@ -140,19 +141,19 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
     ax.set_ylabel(spec_labels['f_lambda'], fontsize=12)
 
 
-def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, ax=None):
+def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, z=0, ax=None):
 
     if ax is None:
         ax = plt.gca()
 
-    ax.plot(wl, (f_obs-f_syn_cont)/f_syn_cont, color=res_color, lw=res_lw)
+    ax.plot(wl / (1+z), (f_obs-f_syn_cont) * (1+z) / f_syn_cont, color=res_color, lw=res_lw)
 
     ax.set_ylabel(spec_labels['res'], fontsize=12)
     ax.set_xlabel(spec_labels['wl'], fontsize=12)
 
     ax.set_ylim(-0.35, 0.35)
 
-    ax.hlines(y=0, xmin=wl[0], xmax=wl[-1], lw=2, zorder=15, linestyles='dashed')
+    ax.hlines(y=0, xmin=wl[0] / (1+z), xmax=wl[-1] / (1+z), lw=2, zorder=15, linestyles='dashed')
 
 
 def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None):

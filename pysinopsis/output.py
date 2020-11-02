@@ -6,7 +6,6 @@ ariel@padova
 Tools to organize SINOPSIS output in python.
 
 TODO: Method for radial profiles, requires calculating distance to centre of the cube (wcs?)
-TODO: Past and future datacubes, require parametric SFH module and spectral library handling
 
 """
 
@@ -127,7 +126,7 @@ def read_eqw_cube(eqw_cube_file):
     eqw_cube = fits.open(eqw_cube_file)[0]
 
     eqws = OrderedDict()
-    for i in range(31):
+    for i in range(eqw_cube.data.shape[0]):
         plane_key = 'PLANE%0.2d' % i  # FIXME: Hard-coded!
 
         eqws[eqw_cube.header[plane_key]] = masked_array(eqw_cube.data[i], mask=eqw_cube.data[i] == -999)
@@ -154,7 +153,7 @@ def read_mag_cube(mag_cube_file):
     mag_cube = fits.open(mag_cube_file)[0]
 
     mags = OrderedDict()
-    for i in range(33):
+    for i in range(mag_cube.data.shape[0]):
         plane_key = 'PLANE%0.2d' % i  # FIXME: Hard-coded!
 
         mags[mag_cube.header[plane_key]] = masked_array(mag_cube.data[i], mask=mag_cube.data[i] == -999)
@@ -204,7 +203,7 @@ class SinopsisCube:
             self.sfh = np.ma.masked_array(self.sfh, mask=self.sfh == -999)
 
         # Equivalend widths:
-        # self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
+        self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
 
         # Magnitudes:
         self.mag = read_mag_cube(sinopsis_directory + self.galaxy_id + '_mag.fits')

@@ -11,8 +11,7 @@ import numpy as np
 
 
 def calc_sn(wl, f_obs, f_err, z, window_limits=(5500, 5700)):
-
-    wl = wl / (1+z)
+    wl = wl / (1 + z)
 
     window = (wl > window_limits[0]) & (wl < window_limits[1])
 
@@ -22,8 +21,7 @@ def calc_sn(wl, f_obs, f_err, z, window_limits=(5500, 5700)):
 
 
 def calc_continuum_rms(wl, f_obs, f_syn, z, window_limits=(5500, 5700)):
-
-    wl = wl / (1+z)
+    wl = wl / (1 + z)
 
     window = (wl > window_limits[0]) & (wl < window_limits[1])
 
@@ -33,15 +31,14 @@ def calc_continuum_rms(wl, f_obs, f_syn, z, window_limits=(5500, 5700)):
 
 
 def get_uncertainty(sinopsis_cube, sinopsis_property, x, y):
-
     if sinopsis_property in ['Mb1', 'Mb2', 'Mb3', 'Mb4']:
         print('Uncertainty in masses to be automated.')
 
     else:
-        plus = sinopsis_cube.properties[sinopsis_property+'_M'][x, y] - \
+        plus = sinopsis_cube.properties[sinopsis_property + '_M'][x, y] - \
                sinopsis_cube.properties[sinopsis_property][x, y]
         minus = sinopsis_cube.properties[sinopsis_property][x, y] - \
-                sinopsis_cube.properties[sinopsis_property+'_m'][x, y]
+                sinopsis_cube.properties[sinopsis_property + '_m'][x, y]
 
         return plus, minus
 
@@ -53,16 +50,32 @@ def initial_burst(t, t_u, n1, tau_i):
 
     """
 
-    sfr = (((t_u - t) / t_u) ** n1) * np.exp(-((t_u-t)/(tau_i*t_u)))
+    sfr = (((t_u - t) / t_u) ** n1) * np.exp(-((t_u - t) / (tau_i * t_u)))
 
     return sfr
 
 
 def late_burst(t, m_b, t_b, n2, tau_b):
-
-    sfr = m_b * (((t_b - t) / t_b) ** n2) * np.exp(-((t_b-t)/(tau_b*t_b)))
+    sfr = m_b * (((t_b - t) / t_b) ** n2) * np.exp(-((t_b - t) / (tau_b * t_b)))
 
     return sfr
+
+
+def get_center(fit_mask):
+    coords = np.argwhere(fit_mask == 1)
+
+    x_center = np.mean(coords[:, 1])
+    y_center = np.mean(coords[:, 0])
+
+    return x_center, y_center
+
+
+def get_coordinate_crid(sinopsis_cube):
+    x_coords, y_coords = np.meshgrid(range(sinopsis_cube.cube_shape[1]), range(sinopsis_cube.cube_shape[2]),
+                                     indexing='xy')
+    grid = np.array([x_coords, y_coords])
+
+    return grid
 
 
 if __name__ == '__main__':

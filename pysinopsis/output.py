@@ -218,17 +218,20 @@ class SinopsisCube:
                            'flux': obs_cube[1].header,
                            'error': obs_cube[2].header}
 
+        self.flux_unit = 10 ** float(self.obs_header['flux']['BUNIT'].split()[0].split('**')[1])
+        self.flux_unit_err = 10 ** float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
+
         self.wl = obs_cube[1].header['CRVAL3'] + obs_cube[1].header['CD3_3'] * np.arange(obs_cube[1].header['NAXIS3'])
-        self.f_obs = masked_array(obs_cube[1].data, mask=np.isnan(obs_cube[1].data))
-        self.f_err = masked_array(np.sqrt(obs_cube[2].data), mask=np.isnan(obs_cube[2].data))  # FIXME: CHECK!
+        self.f_obs = masked_array(obs_cube[1].data * self.flux_unit, mask=np.isnan(obs_cube[1].data))
+        self.f_err = masked_array(np.sqrt(obs_cube[2].data * self.flux_unit_err), mask=np.isnan(obs_cube[2].data))  # FIXME: CHECK!
         self.cube_shape = self.f_obs.shape
 
         # Model cube:
         model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]
         model_cube_nolines = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube_nolines.fits')[0]
 
-        self.f_syn = masked_array(model_cube.data, mask=model_cube.data == -999)
-        self.f_syn_cont = masked_array(model_cube_nolines.data, mask=model_cube.data == -999)
+        self.f_syn = masked_array(model_cube.data * self.flux_unit, mask=model_cube.data == -999)
+        self.f_syn_cont = masked_array(model_cube_nolines.data * self.flux_unit, mask=model_cube.data == -999)
 
         # Emission only cube:
         self.emission_only = self.f_obs - self.f_syn_cont
@@ -266,11 +269,9 @@ class SinopsisCube:
             # ssp_results = Table.read(fname_fit_details, format='ascii', header_start=23,
             #                          data_start=24)
 
-    def plot_map(self, sinopsis_property, show_plot=True):
+    def plot_map(self, sinopsis_property, show_plot=True, ax=None, custom_mask=None):
 
-        plt.figure()
-
-        sinplot.plot_sinopsis_map(self, sinopsis_property)
+        sinplot.plot_sinopsis_map(self, sinopsis_property, ax=ax, custom_mask=custom_mask)
 
         if show_plot:
             plt.show()
@@ -282,16 +283,8 @@ class SinopsisCube:
 
         plt.figure()
 
-        # FIXME : BUNIT conversion sort of hard-coded
-        # FIXME : BUNIT is in a diferent place on the header in the 5x5 and not 5x5 cubes, it is also in a different
-        #  format, with ** indicating the power of 10, making it impossible to convert directly to float,
-        #  I'm working arround the issue by splitting strings and isolating the power of 10
-
-        flux_power = float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
-
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y],
-                         self.f_err[:, x, y], plot_error=plot_error, plot_legend=plot_legend,
-                         flux_unit=10 ** flux_power, z=self.catalog['z'])
+                         self.f_err[:, x, y], plot_error=plot_error, plot_legend=plot_legend, z=self.catalog['z'])
 
         if show_plot:
             plt.show()
@@ -312,12 +305,9 @@ class SinopsisCube:
         ax_map = plt.subplot(gs[3:5, 2:4])
 
         # Plotting fit and residuals:
-        # FIXME: BUNIT conversion sort of hard-coded, same problem as in the plot_spectrum module
-
-        flux_power = float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
 
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y],
-                         self.f_err[:, x, y], flux_unit=10 ** flux_power, ax=ax_spectrum, z=self.catalog['z'])
+                         self.f_err[:, x, y], ax=ax_spectrum, z=self.catalog['z'])
 
         sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals,
                                z=self.catalog['z'])

@@ -97,7 +97,7 @@ spec_labels = {'wl': r'$\lambda \, \mathrm{[\AA]}$',
 
 
 def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True, plot_legend=True, flux_unit=1,
-             obs_color='k', syn_color='b', syn_cont_color='g', obs_lw=0.5, syn_lw=1.5, z=0):
+             flux_unit_err=1, obs_color='k', syn_color='b', syn_cont_color='g', obs_lw=0.5, syn_lw=1.5, z=0):
     """
 
     FIXME: Doc me
@@ -132,7 +132,7 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
             label='Synthetic Spectrum (Continuum)')
 
     if plot_error:
-        ax.plot(wl / (1+z), flux_unit * f_err * (1+z), '--r', label='Error')
+        ax.plot(wl / (1+z), flux_unit_err * f_err * (1+z), '--r', label='Error')
 
     if plot_legend:
         ax.legend()
@@ -156,17 +156,21 @@ def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, z=0, ax=Non
     ax.hlines(y=0, xmin=wl[0] / (1+z), xmax=wl[-1] / (1+z), lw=2, zorder=15, linestyles='dashed')
 
 
-def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None):
+def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None, custom_mask=None):
 
     if ax is None:
         ax = plt.gca()
 
-    sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap, origin='lower')
+    if custom_mask is not None:
+        sinopsis_map = ax.imshow(np.ma.masked_array(sinopsis_cube.properties[sinopsis_property], mask=custom_mask),
+                                 cmap=cmap, origin='lower')
+    else:
+        sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap, origin='lower')
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')
 
-    cb = ax.figure.colorbar(mappable=sinopsis_map)
+    cb = plt.colorbar(mappable=sinopsis_map, ax=ax)
     cb.set_label(sinopsis_labels[sinopsis_property], fontsize=20)
 
 

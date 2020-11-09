@@ -82,7 +82,6 @@ def read_results_cube(output_cube_file, sfh_type):
 
     """
 
-    global len_cube
     output_cube = fits.open(output_cube_file)[0]
 
     header_info_keys = ['SIMPLE', 'BITPIX', 'NAXIS', 'NAXIS1', 'NAXIS2', 'NAXIS3', 'EXTEND', 'CRVAL1', 'CRVAL2',
@@ -94,10 +93,10 @@ def read_results_cube(output_cube_file, sfh_type):
 
     properties = OrderedDict()
 
-    if sfh_type == 'ff':
-        len_cube = 89
     if sfh_type == 'dexp':
         len_cube = 74
+    else:
+        len_cube = 89
 
     for i in range(len_cube):
         plane_key = 'PLANE%0.2d' % i
@@ -193,13 +192,14 @@ class SinopsisCube:
         if self.config['sfh_type'] == 'ff':
             self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22,
                                           skip_footer=6)[:, 0]  # FIXME: Double-check me
+            self.n_ages = len(self.age_bins)
             self.age_bins = np.append(0, self.age_bins)
             self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.bin', skip_header=3)
             self.age_bins_4 = np.append(0, self.age_bins_4)
 
-            self.age_bin_center = np.array([(self.age_bins[i] + self.age_bins[i + 1]) / 2 for i in range(12)])
+            self.age_bin_center = np.array([(self.age_bins[i] + self.age_bins[i + 1]) / 2 for i in range(self.n_ages)])
 
-            self.sfh = np.array([self.properties['sfr_' + str(i)] for i in range(1, 13)])
+            self.sfh = np.array([self.properties['sfr_' + str(i)] for i in range(1, self.n_ages+1)])
             self.sfh = np.ma.masked_array(self.sfh, mask=self.sfh == -999)
 
         # Equivalend widths:

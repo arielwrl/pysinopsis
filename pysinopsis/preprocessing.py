@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from skimage.filters import gaussian
 from skimage.transform import rescale
+from scipy.interpolate import interp1d
+import itertools
 
 
 def smooth_cube(cube, sigma, gauss_truncate=5):
@@ -71,6 +73,42 @@ def process_degraded_cube(in_filename, out_filename, psf_sigma, bin_size, gauss_
     hdu_list.writeto(out_filename)
 
     return hdu_list
+
+
+def resampler(x_old, y_old, x_new):
+    interp = interp1d(x_old, y_old, bounds_error=False, fill_value=(0., 0.))
+
+    y_new = interp(x_new)
+
+    return y_new
+
+
+def integrated_spectrum(wl, flux_cube, error_cube, z, mask, wl_range):
+
+    flux_cube = np.ma.masked_array(flux_cube, mask=mask)
+    error_cube = np.ma.masked_array(error_cube, mask=mask)
+
+    z = z - np.mean(z)
+
+    wl_resampled = np.arange(wl_range[0], wl_range[1], 3).astype(float)
+
+    integrated_flux = np.zeros_like(wl_resampled)
+    integrated_error = np.zeros_like(wl_resampled)
+
+    for i, j in itertools.product(range(flux_cube.data.shape[1]), range(flux_cube.data.shape[2])):
+
+        if np.any(mask[:, i, j]):
+            continue
+
+        wl_rest = wl / (1 + z[i, j])
+
+        flux_interp = resampler(wl_rest, flux_cube[:, i, j], wl_resampled)
+        error_interp = resampler(wl_rest, error_cube[:, i, j], wl_resampled)
+
+        integrated_flux += flux_interp
+        integrated_error += error_interp
+
+    return wl_resampled, integrated_flux, integrated_error
 
 
 if __name__ == '__main__':

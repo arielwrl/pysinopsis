@@ -269,9 +269,9 @@ class SinopsisCube:
             # ssp_results = Table.read(fname_fit_details, format='ascii', header_start=23,
             #                          data_start=24)
 
-    def plot_map(self, sinopsis_property, show_plot=True, ax=None, custom_mask=None):
+    def plot_map(self, sinopsis_property, show_plot=True, ax=None, custom_mask=None, cmap='magma_r'):
 
-        sinplot.plot_sinopsis_map(self, sinopsis_property, ax=ax, custom_mask=custom_mask)
+        sinplot.plot_sinopsis_map(self, sinopsis_property, ax=ax, custom_mask=custom_mask, cmap=cmap)
 
         if show_plot:
             plt.show()

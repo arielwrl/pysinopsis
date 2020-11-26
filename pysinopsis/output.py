@@ -160,6 +160,15 @@ def read_mag_cube(mag_cube_file):
     return mags
 
 
+def read_sfh_file(fname, skip_lines=17):
+
+    ssp_results = np.genfromtxt(fname, skip_header=skip_lines)
+
+    age, sfr = np.log10(ssp_results[:, 0]), ssp_results[:, 3]
+
+    return age, sfr
+
+
 class SinopsisCube:
     """
 
@@ -218,15 +227,15 @@ class SinopsisCube:
                            'flux': obs_cube[1].header,
                            'error': obs_cube[2].header}
 
-        self.flux_unit = 10 ** float(self.obs_header['flux']['BUNIT'].split()[0].split('**')[1])
-        self.flux_unit_err = 10 ** float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1])
+        self.flux_unit = 10 ** float(self.obs_header['flux']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
+        self.flux_unit_err = 10 ** float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
 
         self.wl = obs_cube[1].header['CRVAL3'] + obs_cube[1].header['CD3_3'] * np.arange(obs_cube[1].header['NAXIS3'])
         self.f_obs = masked_array(obs_cube[1].data * self.flux_unit, mask=np.isnan(obs_cube[1].data))
         self.f_err = masked_array(np.sqrt(obs_cube[2].data * self.flux_unit_err), mask=np.isnan(obs_cube[2].data))  # FIXME: CHECK!
         self.cube_shape = self.f_obs.shape
 
-        # Model cube:
+        # Model cube:all
         model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]
         model_cube_nolines = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube_nolines.fits')[0]
 
@@ -238,7 +247,7 @@ class SinopsisCube:
         self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
 
     def invalid_spaxel(self, x, y):
-        if np.all(self.f_syn.mask[:, x, y]):
+        if self.mask[x, y] == 0:
             return True
         else:
             return False
@@ -254,20 +263,12 @@ class SinopsisCube:
             fname_fit_details = self.sinopsis_directory + fname_prefix + '.%0.4d_%0.4d.out' % (
             y + 1, x + 1)  # FIXME: 0- or 1-indexed?
 
-            n_features = open(fname_fit_details, 'rt').read().splitlines()[0].split()[0]
-            n_features = int(n_features)
+            # n_features = open(fname_fit_details, 'rt').read().splitlines()[0].split()[0]
+            # n_features = int(n_features)
 
-            ssp_results = np.genfromtxt(fname_fit_details, skip_header=23)
+            age, sfr = read_sfh_file(fname_fit_details)
 
-            age, sfr = np.log10(ssp_results[:, 0]), ssp_results[:, 3]
-
-            return age, sfr
-
-            # fit_details_table = Table.read(fname_fit_details, format='ascii', header_start=1,
-            #                                data_end=n_features+2)
-
-            # ssp_results = Table.read(fname_fit_details, format='ascii', header_start=23,
-            #                          data_start=24)
+            return  age, sfr
 
     def plot_map(self, sinopsis_property, show_plot=True, ax=None, custom_mask=None, cmap='magma_r'):
 

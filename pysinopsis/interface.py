@@ -13,7 +13,6 @@ from pysinopsis.output import read_config, read_sinopsis_catalog
 
 
 def smart_remove_file(file_name):
-
     try:
         os.remove(file_name)
     except FileNotFoundError:
@@ -43,4 +42,23 @@ def clear_sinopsis_run(sinopsis_directory='./'):
     smart_remove_file(sinopsis_directory + galaxy_id + '_out.fits')
 
     print('>>> Removed all files!')
+
+
+def write_cat_file(cat_fname, cube_fname, mask_fnames, redshift):
+    cat_file = open(cat_fname, 'wb')
+
+    cat_file.write(str.encode(cube_fname+'\n'))
+
+    for i in range(len(mask_fnames)):
+        cat_file.write(str.encode(mask_fnames[i] + ' '))
+    cat_file.write(b'\n')
+
+    cat_file.write(str.encode(str(redshift)))
+
+    cat_file.close()
+
+
+
+
+
 

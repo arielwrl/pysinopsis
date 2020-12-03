@@ -247,7 +247,7 @@ class SinopsisCube:
         self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
 
     def invalid_spaxel(self, x, y):
-        if self.mask[x, y] == 0:
+        if np.any(self.f_syn[:, x, y].mask):
             return True
         else:
             return False
@@ -268,7 +268,7 @@ class SinopsisCube:
 
             age, sfr = read_sfh_file(fname_fit_details)
 
-            return  age, sfr
+            return age, sfr
 
     def plot_map(self, sinopsis_property, show_plot=True, ax=None, custom_mask=None, cmap='magma_r'):
 

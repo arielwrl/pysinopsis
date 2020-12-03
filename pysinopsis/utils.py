@@ -78,6 +78,17 @@ def get_coordinate_crid(sinopsis_cube):
     return grid
 
 
+def gini(x):
+    # Mean absolute difference
+    mad = np.abs(np.subtract.outer(x, x)).mean()
+    # Relative mean absolute difference
+    rmad = mad/np.mean(x)
+    # Gini coefficient
+    g = 0.5 * rmad
+    return g
+
+
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 

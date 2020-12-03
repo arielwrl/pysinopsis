@@ -167,8 +167,8 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None,
     else:
         sinopsis_map = ax.imshow(sinopsis_cube.properties[sinopsis_property], cmap=cmap, origin='lower')
 
-    ax.set_xlabel('x')
-    ax.set_ylabel('y')
+    ax.set_xlabel('x', fontsize=16)
+    ax.set_ylabel('y', fontsize=16)
 
     cb = plt.colorbar(mappable=sinopsis_map, ax=ax)
     cb.set_label(sinopsis_labels[sinopsis_property], fontsize=20)

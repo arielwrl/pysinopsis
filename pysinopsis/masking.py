@@ -32,11 +32,14 @@ def plot_image(image, vmin=0, vmax=15):
     plt.show()
 
 
-def draw_circle(xc, yc, radius):
+def draw_circle(xc, yc, radius, axis=None):
+
+    if axis is None:
+        axis = plt.gca()
 
     circle = Circle((xc, yc), radius=radius)
 
-    plt.gca().add_patch(circle)
+    axis.add_patch(circle)
 
     return circle
 

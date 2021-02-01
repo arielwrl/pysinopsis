@@ -160,11 +160,17 @@ def read_mag_cube(mag_cube_file):
     return mags
 
 
-def read_sfh_file(fname, skip_lines=17):
+def read_sfh_file(fname):
+
+    # Find how many lines should be skipped:
+    file = open(fname, 'rb').readlines()
+    for i in range(len(file)):
+        if np.any(np.array(file[i].split())==b'Age'):
+            skip_lines=i+1
 
     ssp_results = np.genfromtxt(fname, skip_header=skip_lines)
 
-    age, sfr, ebv = np.log10(ssp_results[:, 0]), ssp_results[:, 3], ssp_results[:,2]
+    age, sfr, ebv = ssp_results[:, 0], ssp_results[:, 3], ssp_results[:, 2]
 
     return age, sfr, ebv
 

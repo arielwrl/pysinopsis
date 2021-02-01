@@ -164,9 +164,24 @@ def read_sfh_file(fname, skip_lines=17):
 
     ssp_results = np.genfromtxt(fname, skip_header=skip_lines)
 
-    age, sfr = np.log10(ssp_results[:, 0]), ssp_results[:, 3]
+    age, sfr, ebv = np.log10(ssp_results[:, 0]), ssp_results[:, 3], ssp_results[:,2]
 
-    return age, sfr
+    return age, sfr, ebv
+
+
+def read_fit_results(fname, skip_header=1, skip_footer=12):
+
+    results = np.genfromtxt(fname, skip_header=skip_header, skip_footer=skip_footer)
+
+    results_dict = {'Lambc' : results[:, 0],
+                    'Deltl' : results[:, 1],
+                    'Sigma' : results[:, 2],
+                    'Weight' : results[:, 3],
+                    'Obs'   : results[:, 5],
+                    'Model' : results[:, 5],
+                    'Chi'   : results[:, 6]}
+
+    return results_dict
 
 
 class SinopsisCube:

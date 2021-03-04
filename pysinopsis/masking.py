@@ -56,7 +56,7 @@ def create_mask(xc, yc, radius, image):
     spatial_mask = np.zeros((n_x, n_y))
     spatial_mask[masked] = 1.
 
-    plt.gca().imshow(np.ma.masked_array(spatial_mask, mask=spatial_mask==1).transpose(), zorder=10)
+    plt.gca().imshow(np.ma.masked_array(spatial_mask, mask=spatial_mask==1).transpose(), zorder=10, alpha=0.5)
 
     return spatial_mask
 

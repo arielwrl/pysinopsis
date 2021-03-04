@@ -8,6 +8,7 @@ Miscelaneous tools.
 """
 
 import numpy as np
+from scipy.interpolate import interp1d
 
 
 def calc_sn(wl, f_obs, f_err, z, window_limits=(5500, 5700)):
@@ -70,7 +71,7 @@ def get_center(fit_mask):
     return x_center, y_center
 
 
-def get_coordinate_crid(sinopsis_cube):
+def get_coordinate_grid(sinopsis_cube):
     x_coords, y_coords = np.meshgrid(range(sinopsis_cube.cube_shape[1]), range(sinopsis_cube.cube_shape[2]),
                                      indexing='xy')
     grid = np.array([x_coords, y_coords])
@@ -87,6 +88,32 @@ def gini(x):
     g = 0.5 * rmad
     return g
 
+
+def cumulative_sfh(sfrs):
+    """
+
+    Returns a normalized cumulative SFH
+
+    """
+
+    normalized_sfrs = sfrs/np.sum(sfrs)
+
+    cumulative_sfh = np.cumsum(normalized_sfrs[::-1])[::-1]
+
+    return cumulative_sfh
+
+
+def calc_t_x(age_bins, sfrs, target_fraction):
+
+    csfh = cumulative_sfh(sfrs)
+
+    interpolator = interp1d(age_bins[1:], csfh)
+
+    probe = np.linspace(age_bins[1], age_bins[-1], 40000)
+
+    t_x = probe[np.argmin(np.absolute(interpolator(probe)-target_fraction))]
+
+    return t_x
 
 
 if __name__ == '__main__':

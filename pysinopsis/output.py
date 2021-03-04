@@ -202,7 +202,7 @@ class SinopsisCube:
 
     """
 
-    def __init__(self, sinopsis_directory='./'):
+    def __init__(self, sinopsis_directory='./', memory_saving=False):
 
         config = read_config(sinopsis_directory)
         catalog = read_sinopsis_catalog(sinopsis_directory, config['input_catalog'], input_type='cube')
@@ -217,6 +217,9 @@ class SinopsisCube:
         # SINOPSIS results:
         self.header_info, self.properties = read_results_cube(sinopsis_directory + self.galaxy_id + '_out.fits',
                                                               sfh_type=self.config['sfh_type'])
+        print('Results correctly read')
+
+        self.config['sfh_type'] = 'ff'
 
         # Ages:
         if self.config['sfh_type'] == 'ff':
@@ -224,6 +227,7 @@ class SinopsisCube:
                                           skip_footer=6)[:, 0]  # FIXME: Double-check me
             self.n_ages = len(self.age_bins)
             self.age_bins = np.append(0, self.age_bins)
+            self.age_bin_width = np.array([self.age_bins[i+1] - self.age_bins[i] for i in range(self.n_ages)])
             self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.bin', skip_header=3)
             self.age_bins_4 = np.append(0, self.age_bins_4)
 
@@ -233,16 +237,20 @@ class SinopsisCube:
             self.sfh = np.ma.masked_array(self.sfh, mask=self.sfh == -999)
 
         # Equivalend widths:
-        self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
+        if ~memory_saving:
+            self.eqw = read_eqw_cube(sinopsis_directory + self.galaxy_id + '_eqw.fits')
 
         # Magnitudes:
-        self.mag = read_mag_cube(sinopsis_directory + self.galaxy_id + '_mag.fits')
+        if ~memory_saving:
+            self.mag = read_mag_cube(sinopsis_directory + self.galaxy_id + '_mag.fits')
 
         # Mask:
         self.mask = fits.open(sinopsis_directory + self.galaxy_id + '_fitmask.fits')[0].data
 
         # Observed cube:
+        print('Reading observed cube')
         obs_cube = fits.open(self.sinopsis_directory + self.obs_file)
+        print('Finished reading observed cube')
 
         self.obs_header = {'primary': obs_cube[0].header,
                            'flux': obs_cube[1].header,
@@ -256,16 +264,25 @@ class SinopsisCube:
         self.f_err = masked_array(np.sqrt(obs_cube[2].data * self.flux_unit_err), mask=np.isnan(obs_cube[2].data))  # FIXME: CHECK!
         self.cube_shape = self.f_obs.shape
 
-        # Model cube:all
+        # Model cube:
         model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]
         model_cube_nolines = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube_nolines.fits')[0]
+
+        print('Model cube read')
 
         self.f_syn = masked_array(model_cube.data * self.flux_unit, mask=model_cube.data == -999)
         self.f_syn_cont = masked_array(model_cube_nolines.data * self.flux_unit, mask=model_cube.data == -999)
 
+        print('f_syn Calculated')
+
         # Emission only cube:
-        self.emission_only = self.f_obs - self.f_syn_cont
-        self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
+        if ~memory_saving:
+            self.emission_only = self.f_obs - self.f_syn_cont
+
+        if ~memory_saving:
+            self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
+
+        print('Emission-only calculated')
 
     def invalid_spaxel(self, x, y):
         if np.any(self.f_syn[:, x, y].mask):

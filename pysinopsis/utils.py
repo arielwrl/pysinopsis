@@ -89,31 +89,44 @@ def gini(x):
     return g
 
 
-def cumulative_sfh(sfrs):
+def cumulative_sfh(sfrs, bin_widths):
     """
 
     Returns a normalized cumulative SFH
 
     """
 
-    normalized_sfrs = sfrs/np.sum(sfrs)
+    mass_fractions = sfrs * bin_widths
 
-    cumulative_sfh = np.cumsum(normalized_sfrs[::-1])[::-1]
+    normalized_mass_fractions = mass_fractions /np.sum(mass_fractions)
+
+    cumulative_sfh = np.cumsum(normalized_mass_fractions[::-1])[::-1]
 
     return cumulative_sfh
 
 
-def calc_t_x(age_bins, sfrs, target_fraction):
+# def calc_t_x(age_bins, sfrs, target_fraction):
+#
+#     csfh = cumulative_sfh(sfrs)
+#
+#     interpolator = interp1d(age_bins[1:], csfh)
+#
+#     probe = np.linspace(age_bins[1], age_bins[-1], 40000)
+#
+#     t_x = probe[np.argmin(np.absolute(interpolator(probe)-target_fraction))]
+#
+#     return t_x
 
-    csfh = cumulative_sfh(sfrs)
+
+def calc_mass_formed(age_bins, sfrs, bin_widths, target_time):
+
+    csfh = cumulative_sfh(sfrs, bin_widths)
 
     interpolator = interp1d(age_bins[1:], csfh)
 
-    probe = np.linspace(age_bins[1], age_bins[-1], 40000)
+    mass_formed = interpolator(target_time)
 
-    t_x = probe[np.argmin(np.absolute(interpolator(probe)-target_fraction))]
-
-    return t_x
+    return mass_formed
 
 
 if __name__ == '__main__':

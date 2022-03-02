@@ -89,6 +89,17 @@ def gini(x):
     return g
 
 
+def calc_mwage(age_bins, sfrs, bin_widths):
+
+    mass_fractions = sfrs * bin_widths
+
+    normalized_mass_fractions = mass_fractions / np.sum(mass_fractions)
+
+    mwage = np.sum(age_bins * normalized_mass_fractions)/np.sum(normalized_mass_fractions)
+
+    return mwage
+
+
 def cumulative_sfh(sfrs, bin_widths):
     """
 
@@ -98,35 +109,83 @@ def cumulative_sfh(sfrs, bin_widths):
 
     mass_fractions = sfrs * bin_widths
 
-    normalized_mass_fractions = mass_fractions /np.sum(mass_fractions)
+    normalized_mass_fractions = mass_fractions / np.sum(mass_fractions)
 
     cumulative_sfh = np.cumsum(normalized_mass_fractions[::-1])[::-1]
 
     return cumulative_sfh
 
 
-# def calc_t_x(age_bins, sfrs, target_fraction):
-#
-#     csfh = cumulative_sfh(sfrs)
-#
-#     interpolator = interp1d(age_bins[1:], csfh)
-#
-#     probe = np.linspace(age_bins[1], age_bins[-1], 40000)
-#
-#     t_x = probe[np.argmin(np.absolute(interpolator(probe)-target_fraction))]
-#
-#     return t_x
+def calc_t_x(age_bins, sfrs, bin_widths, target_fraction):
+
+    csfh = cumulative_sfh(sfrs, bin_widths)
+
+    csfh = np.append(csfh, 0)
+
+    interpolator = interp1d(age_bins, csfh)
+
+    probe = np.linspace(age_bins[1], age_bins[-1], 40000)
+
+    t_x = probe[np.argmin(np.absolute(interpolator(probe)-target_fraction))]
+
+    return t_x
 
 
 def calc_mass_formed(age_bins, sfrs, bin_widths, target_time):
 
     csfh = cumulative_sfh(sfrs, bin_widths)
 
-    interpolator = interp1d(age_bins[1:], csfh)
+    csfh = np.append(csfh, 0)
+
+    interpolator = interp1d(age_bins, csfh)
 
     mass_formed = interpolator(target_time)
 
     return mass_formed
+
+
+def calc_manual_ew(wl, flux, delta_wl, line):
+
+    if line == 'Hd':
+
+        blue_cont = np.median(flux[(wl > 4076.4) & (wl < 4088.8)])
+        red_cont = np.median(flux[(wl > 4117.2) & (wl < 4136.7)])
+
+        blue_wl = np.mean(wl[(wl > 4076.4) & (wl < 4088.8)])
+        red_wl = np.mean(wl[(wl > 4117.2) & (wl < 4136.7)])
+
+        ew_range = (wl > 4091.75) & (wl < 4112)
+
+    if line == 'Hb':
+
+        blue_cont = np.median(flux[(wl > 4806.0) & (wl < 4826.0)])
+        red_cont = np.median(flux[(wl > 4896.0) & (wl < 4918.0)])
+
+        blue_cont_syn = np.median(flux_syn[(wl > 4806.0) & (wl < 4826.0)])
+        red_cont_syn = np.median(flux_syn[(wl > 4896.0) & (wl < 4918.0)])
+
+        blue_wl = np.mean(wl[(wl > 4806.0) & (wl < 4826.0)])
+        red_wl = np.mean(wl[(wl > 4896.0) & (wl < 4918.0)])
+
+        ew_range = (wl > 4826.0) & (wl < 4896.0)
+
+    cont_slope = (red_cont - blue_cont) / (red_wl - blue_wl)
+    cont_intercept = blue_cont - blue_wl * cont_slope
+
+    cont_level = wl * cont_slope + cont_intercept
+
+    integrated_hdelta = np.trapz(1 - (flux[ew_range] / cont_level[ew_range]), dx=delta_wl)
+
+    return integrated_hdelta
+
+
+def box_filter(wl_in, flux_in, box_width=16):
+
+    wl_out = np.array([np.mean(wl_in[i:i+box_width]) for i in range(len(wl_in)-box_width)])
+    flux_out = np.array([np.mean(flux_in[i:i + box_width]) for i in range(len(flux_in) - box_width)])
+
+    return wl_out, flux_out
+
 
 
 if __name__ == '__main__':

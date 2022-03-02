@@ -5,7 +5,7 @@ ariel@padova
 
 Tools to organize SINOPSIS output in python.
 
-TODO: Method for radial profiles, requires calculating distance to centre of the cube (wcs?)
+TODO: Method for radial profiles, requires calculating distance to centre of the cube
 
 """
 
@@ -18,6 +18,7 @@ from astropy.table import Table
 from collections import OrderedDict
 import pysinopsis.plotting as sinplot
 from pysinopsis import utils
+from pycasso2.resampling import apply_kinematics
 
 
 def read_config(sinopsis_dir='./'):
@@ -66,7 +67,7 @@ def read_sinopsis_catalog(sinopsis_dir, input_catalog_file, input_type):
         return sinopsis_catalog
 
 
-def read_results_cube(output_cube_file, sfh_type):
+def read_results_cube(output_cube_file, cube_type):
     """
 
     Reads SINOPSIS output cube into a dictionary of masked arrays.
@@ -75,6 +76,7 @@ def read_results_cube(output_cube_file, sfh_type):
     -----------
     output_cube_file: file name of SINOPSIS output cube
         type: str
+    cube_type: One of dexp, ff or GASP, distinguishes between different version of SINOPSIS results cube
 
     returns:
     -----------
@@ -93,8 +95,10 @@ def read_results_cube(output_cube_file, sfh_type):
 
     properties = OrderedDict()
 
-    if sfh_type == 'dexp':
+    if cube_type == 'dexp':
         len_cube = 74
+    if cube_type == 'GASP':
+        len_cube = 77
     else:
         len_cube = 89
 
@@ -216,10 +220,16 @@ class SinopsisCube:
 
         # SINOPSIS results:
         self.header_info, self.properties = read_results_cube(sinopsis_directory + self.galaxy_id + '_out.fits',
-                                                              sfh_type=self.config['sfh_type'])
+                                                              cube_type=self.config['sfh_type'])
         print('Results correctly read')
 
         self.config['sfh_type'] = 'ff'
+
+        # Try to read velocity dispersion
+        try:
+            self.velocity_dispersion = fits.open(sinopsis_directory + self.galaxy_id + '_sig_abs_mask.fits')[0].data
+        except Exception:
+            self.velocity_dispersion = np.full_like(self.properties['mwage'], 0)
 
         # Ages:
         if self.config['sfh_type'] == 'ff':
@@ -315,15 +325,19 @@ class SinopsisCube:
         if show_plot:
             plt.show()
 
-    def plot_spectrum(self, x, y, plot_error=True, plot_legend=True, show_plot=True):
+    def plot_spectrum(self, x, y, plot_error=True, plot_legend=True, show_plot=True, ax=None, obs_color='k',
+                      syn_color='g'):
+
+        if ax is None:
+            plt.figure()
+            ax = plt.gca()
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
 
-        plt.figure()
-
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y],
-                         self.f_err[:, x, y], plot_error=plot_error, plot_legend=plot_legend, z=self.catalog['z'])
+                         self.f_err[:, x, y], plot_error=plot_error, plot_legend=plot_legend, z=self.catalog['z'],
+                         ax=ax, syn_color=syn_color, obs_color=obs_color)
 
         if show_plot:
             plt.show()
@@ -344,11 +358,15 @@ class SinopsisCube:
         ax_map = plt.subplot(gs[3:5, 2:4])
 
         # Plotting fit and residuals:
+        conv_fsyn = apply_kinematics(self.wl, self.f_syn[:, x, y], 0, self.velocity_dispersion[x, y],
+                                     nproc=1)
+        conv_fsyn_cont = apply_kinematics(self.wl, self.f_syn_cont[:, x, y], 0, self.velocity_dispersion[x, y],
+                                          nproc=1)
 
-        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], self.f_syn[:, x, y], self.f_syn_cont[:, x, y],
+        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], conv_fsyn, conv_fsyn_cont,
                          self.f_err[:, x, y], ax=ax_spectrum, z=self.catalog['z'])
 
-        sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], self.f_syn_cont[:, x, y], ax=ax_residuals,
+        sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], conv_fsyn_cont, ax=ax_residuals,
                                z=self.catalog['z'])
 
         # Plotting SFH:

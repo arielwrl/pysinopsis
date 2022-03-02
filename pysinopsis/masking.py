@@ -14,7 +14,7 @@ from matplotlib.patches import Polygon
 from matplotlib.patches import Circle
 from astropy.io import fits
 
-plt.ion()  # God fogive me for hardcoding this, such an astronomy thing to do
+plt.ion()  # God forgive me for hardcoding this, such an astronomy thing to do
 
 
 def read_image(image_file):
@@ -56,7 +56,7 @@ def create_mask(xc, yc, radius, image):
     spatial_mask = np.zeros((n_x, n_y))
     spatial_mask[masked] = 1.
 
-    plt.gca().imshow(np.ma.masked_array(spatial_mask, mask=spatial_mask==1).transpose(), zorder=10, alpha=0.5)
+    plt.gca().imshow(np.ma.masked_array(spatial_mask, mask=spatial_mask == 1).transpose(), zorder=10, alpha=0.5)
 
     return spatial_mask
 

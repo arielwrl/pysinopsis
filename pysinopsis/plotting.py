@@ -151,7 +151,7 @@ def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, z=0, ax=Non
     ax.set_ylabel(spec_labels['res'], fontsize=12)
     ax.set_xlabel(spec_labels['wl'], fontsize=12)
 
-    ax.set_ylim(-0.35, 0.35)
+    #ax.set_ylim(-0.35, 0.35)
 
     ax.hlines(y=0, xmin=wl[0] / (1+z), xmax=wl[-1] / (1+z), lw=2, zorder=15, linestyles='dashed')
 

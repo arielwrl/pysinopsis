@@ -23,7 +23,6 @@ from pycasso2.resampling import apply_kinematics
 
 def read_config(sinopsis_dir='./'):
     """
-
     :param sinopsis_dir:
     :return: config dictionary
     """
@@ -238,7 +237,7 @@ class SinopsisCube:
             self.n_ages = len(self.age_bins)
             self.age_bins = np.append(0, self.age_bins)
             self.age_bin_width = np.array([self.age_bins[i+1] - self.age_bins[i] for i in range(self.n_ages)])
-            self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.bin', skip_header=3)
+            self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.config['input_catalog'].split('.')[0] + '.bin', skip_header=3)
             self.age_bins_4 = np.append(0, self.age_bins_4)
 
             self.age_bin_center = np.array([(self.age_bins[i] + self.age_bins[i + 1]) / 2 for i in range(self.n_ages)])
@@ -266,8 +265,19 @@ class SinopsisCube:
                            'flux': obs_cube[1].header,
                            'error': obs_cube[2].header}
 
-        self.flux_unit = 10 ** float(self.obs_header['flux']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
-        self.flux_unit_err = 10 ** float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
+
+        try:
+            self.flux_unit = 10 ** float(self.obs_header['flux']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
+        except Exception:
+            print('Cannot read flux unit from ', self.obs_header['flux']['BUNIT'], ', trying to split()[0] instead:',
+                  self.obs_header['flux']['BUNIT'].split()[0])
+            self.flux_unit = float(self.obs_header['flux']['BUNIT'].split()[0])
+        try:
+            self.flux_unit_err = 10 ** float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
+        except Exception:
+            print('Cannot read flux unit from ', self.obs_header['error']['BUNIT'], ', trying to split()[0] instead:',
+                  self.obs_header['error']['BUNIT'].split()[0])
+            self.flux_unit_err = float(self.obs_header['error']['BUNIT'].split()[0])
 
         self.wl = obs_cube[1].header['CRVAL3'] + obs_cube[1].header['CD3_3'] * np.arange(obs_cube[1].header['NAXIS3'])
         self.f_obs = masked_array(obs_cube[1].data * self.flux_unit, mask=np.isnan(obs_cube[1].data))
@@ -343,7 +353,7 @@ class SinopsisCube:
             plt.show()
 
     def plot_fit_complete(self, x, y, figsize=(13.25, 8.5), out_file_name=None, out_format='png',
-                          show_plot=True):
+                          show_plot=True, use_kin=False):
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
@@ -358,15 +368,19 @@ class SinopsisCube:
         ax_map = plt.subplot(gs[3:5, 2:4])
 
         # Plotting fit and residuals:
-        conv_fsyn = apply_kinematics(self.wl, self.f_syn[:, x, y], 0, self.velocity_dispersion[x, y],
-                                     nproc=1)
-        conv_fsyn_cont = apply_kinematics(self.wl, self.f_syn_cont[:, x, y], 0, self.velocity_dispersion[x, y],
-                                          nproc=1)
+        if use_kin:
+            fsyn = apply_kinematics(self.wl, self.f_syn[:, x, y], 0, self.velocity_dispersion[x, y],
+                                         nproc=1)
+            fsyn_cont = apply_kinematics(self.wl, self.f_syn_cont[:, x, y], 0, self.velocity_dispersion[x, y],
+                                              nproc=1)
+        else:
+            fsyn = self.f_syn[:, x, y]
+            fsyn_cont = self.f_syn_cont[:, x, y]
 
-        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], conv_fsyn, conv_fsyn_cont,
+        sinplot.plot_fit(self.wl, self.f_obs[:, x, y], fsyn, fsyn_cont,
                          self.f_err[:, x, y], ax=ax_spectrum, z=self.catalog['z'])
 
-        sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], conv_fsyn_cont, ax=ax_residuals,
+        sinplot.plot_residuals(self.wl, self.f_obs[:, x, y], fsyn_cont, ax=ax_residuals,
                                z=self.catalog['z'])
 
         # Plotting SFH:
@@ -397,7 +411,6 @@ class SinopsisCube:
 
         # A map to show the spaxel:
         # FIXME: Plotting map of total flux, did not think enough about this
-        # FIXME: Inverting x and y !!! Have to find a better solution for this (numpy works in line, column not x, y)
         reference_map = ax_map.imshow(np.sum(self.f_obs, axis=0), cmap='Blues', origin='lower')
         fig.colorbar(mappable=reference_map, ax=ax_map, label=r'$\log F_\lambda$')
         ax_map.scatter(y, x, marker='x', s=80, c='r', label='x =' + str(y) + ', y =' + str(x))

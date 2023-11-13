@@ -89,13 +89,13 @@ def gini(x):
     return g
 
 
-def calc_mwage(age_bins, sfrs, bin_widths):
+def calc_mwage(age_bins_mid, sfrs, bin_widths):
 
     mass_fractions = sfrs * bin_widths
 
     normalized_mass_fractions = mass_fractions / np.sum(mass_fractions)
 
-    mwage = np.sum(age_bins * normalized_mass_fractions)/np.sum(normalized_mass_fractions)
+    mwage = np.sum(age_bins_mid * normalized_mass_fractions)/np.sum(normalized_mass_fractions)
 
     return mwage
 
@@ -161,13 +161,20 @@ def calc_manual_ew(wl, flux, delta_wl, line):
         blue_cont = np.median(flux[(wl > 4806.0) & (wl < 4826.0)])
         red_cont = np.median(flux[(wl > 4896.0) & (wl < 4918.0)])
 
-        blue_cont_syn = np.median(flux_syn[(wl > 4806.0) & (wl < 4826.0)])
-        red_cont_syn = np.median(flux_syn[(wl > 4896.0) & (wl < 4918.0)])
-
         blue_wl = np.mean(wl[(wl > 4806.0) & (wl < 4826.0)])
         red_wl = np.mean(wl[(wl > 4896.0) & (wl < 4918.0)])
 
         ew_range = (wl > 4826.0) & (wl < 4896.0)
+
+    if line == 'Ha':
+
+        blue_cont = np.median(flux[(wl > 6505.0) & (wl < 6535.0)])
+        red_cont = np.median(flux[(wl > 6595.0) & (wl < 6625.0)])
+
+        blue_wl = np.mean(wl[(wl > 6505.0) & (wl < 6535.0)])
+        red_wl = np.mean(wl[(wl > 6595.0) & (wl < 6625.0)])
+
+        ew_range = (wl > 6553.0) & (wl < 6573.0)
 
     cont_slope = (red_cont - blue_cont) / (red_wl - blue_wl)
     cont_intercept = blue_cont - blue_wl * cont_slope

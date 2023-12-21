@@ -9,6 +9,8 @@ Miscelaneous tools.
 
 import numpy as np
 from scipy.interpolate import interp1d
+from astropy.cosmology import FlatLambdaCDM
+import astropy.units as u
 
 
 def calc_sn(wl, f_obs, f_err, z, window_limits=(5500, 5700)):
@@ -80,12 +82,10 @@ def get_coordinate_grid(sinopsis_cube):
 
 
 def gini(x):
-    # Mean absolute difference
     mad = np.abs(np.subtract.outer(x, x)).mean()
-    # Relative mean absolute difference
     rmad = mad/np.mean(x)
-    # Gini coefficient
     g = 0.5 * rmad
+    
     return g
 
 
@@ -194,6 +194,16 @@ def box_filter(wl_in, flux_in, box_width=16):
     return wl_out, flux_out
 
 
+def luminosity_distance(z, h0=70, omega0=0.3, in_cm=False):
+
+    cosmo = FlatLambdaCDM(h0, omega0)   
+
+    dl = cosmo.luminosity_distance(z)
+
+    if in_cm:
+        dl = dl.to(u.cm)
+
+    return dl.value
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

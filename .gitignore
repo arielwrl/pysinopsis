@@ -1,3 +1,13 @@
 *.fits
 *.out
 *.pyc
+*.spec
+*.dat
+*.log
+*.bin
+*.xml
+*.iml
+*.eqw
+*.jpg
+*.pdf
+*.sin

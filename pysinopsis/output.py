@@ -5,8 +5,6 @@ ariel@padova
 
 Tools to organize SINOPSIS output in python.
 
-TODO: Method for radial profiles, requires calculating distance to centre of the cube
-
 """
 
 import numpy as np
@@ -205,7 +203,7 @@ class SinopsisCube:
 
     """
 
-    def __init__(self, sinopsis_directory='./', memory_saving=False):
+    def __init__(self, sinopsis_directory='./', memory_saving=False, verbose=False):
 
         config = read_config(sinopsis_directory)
         catalog = read_sinopsis_catalog(sinopsis_directory, config['input_catalog'], input_type='cube')
@@ -220,7 +218,9 @@ class SinopsisCube:
         # SINOPSIS results:
         self.header_info, self.properties = read_results_cube(sinopsis_directory + self.galaxy_id + '_out.fits',
                                                               cube_type=self.config['sfh_type'])
-        print('Results correctly read')
+        
+        if verbose:
+            print('Results correctly read')
 
         self.config['sfh_type'] = 'ff'
 
@@ -257,9 +257,9 @@ class SinopsisCube:
         self.mask = fits.open(sinopsis_directory + self.galaxy_id + '_fitmask.fits')[0].data
 
         # Observed cube:
-        print('Reading observed cube')
         obs_cube = fits.open(self.sinopsis_directory + self.obs_file)
-        print('Finished reading observed cube')
+        if verbose:
+            print('Finished reading observed cube')
 
         self.obs_header = {'primary': obs_cube[0].header,
                            'flux': obs_cube[1].header,
@@ -288,12 +288,14 @@ class SinopsisCube:
         model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]
         model_cube_nolines = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube_nolines.fits')[0]
 
-        print('Model cube read')
+        if verbose:
+            print('Model cube read')
 
         self.f_syn = masked_array(model_cube.data * self.flux_unit, mask=model_cube.data == -999)
         self.f_syn_cont = masked_array(model_cube_nolines.data * self.flux_unit, mask=model_cube.data == -999)
 
-        print('f_syn Calculated')
+        if verbose:
+            print('f_syn Calculated')
 
         # Emission only cube:
         if ~memory_saving:
@@ -302,7 +304,8 @@ class SinopsisCube:
         if ~memory_saving:
             self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
 
-        print('Emission-only calculated')
+        if verbose:
+            print('Emission-only calculated')
 
     def invalid_spaxel(self, x, y):
         if np.any(self.f_syn[:, x, y].mask):

@@ -337,6 +337,17 @@ class SinopsisCube:
 
         if show_plot:
             plt.show()
+    
+    def get_center_of_mass(self, sinopsis_property, custom_mask=None):
+        
+        if custom_mask is not None:
+            label_image = custom_mask
+        else:
+            label_image = self.mask == 1
+            
+        center_of_mass = utils.calc_center_of_mass(self.properties[sinopsis_property], label_image)
+            
+        return center_of_mass
 
     def plot_spectrum(self, x, y, plot_error=True, plot_legend=True, show_plot=True, ax=None, obs_color='k',
                       syn_color='g'):
@@ -398,22 +409,7 @@ class SinopsisCube:
             ax_sfh.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
             ax_sfh.set_ylabel('SFR', fontsize=12)
 
-        # FIXME: A problem with the units prevents reconstruction of the parametric SFHs
-        #     t_initial = np.linspace(1e6, 1.4e9, 1000)
-        #     t_late_burst = np.linspace(1e6, self.properties['Tb'][x, y], 1000)
-        #     initial = utils.initial_burst(t_initial, t_u=1.4e9, n1=self.properties['n1'][x, y],
-        #                                   tau_i=self.properties['tau_i'][x, y])
-        #     late_burst = utils.late_burst(t_late_burst, m_b=self.properties['Mb'][x, y],
-        #                                   t_b=self.properties['Tb'][x, y], n2=self.properties['n2'][x, y],
-        #                                   tau_b=self.properties['tau_b'][x, y])
-        #     ax_sfh.plot(np.log10(t_initial), initial, color='red')
-        #     ax_sfh.plot(np.log10(t_late_burst), late_burst, color='blue')
-        #     ax_sfh.set_ylabel('SFR', fontsize=12)
-        #     ax_sfh.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)
-        #     ax_sfh.set_xlim(np.log10(1e6), np.log10(1.4e9))
-
         # A map to show the spaxel:
-        # FIXME: Plotting map of total flux, did not think enough about this
         reference_map = ax_map.imshow(np.sum(self.f_obs, axis=0), cmap='Blues', origin='lower')
         fig.colorbar(mappable=reference_map, ax=ax_map, label=r'$\log F_\lambda$')
         ax_map.scatter(y, x, marker='x', s=80, c='r', label='x =' + str(y) + ', y =' + str(x))

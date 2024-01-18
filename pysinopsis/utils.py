@@ -11,6 +11,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from astropy.cosmology import FlatLambdaCDM
 import astropy.units as u
+from skimage.measure import regionprops
 
 
 def calc_sn(wl, f_obs, f_err, z, window_limits=(5500, 5700)):
@@ -204,6 +205,16 @@ def luminosity_distance(z, h0=70, omega0=0.3, in_cm=False):
         dl = dl.to(u.cm)
 
     return dl.value
+
+
+def calc_center_of_mass(image, label_image):
+
+    label_image = label_image.astype(int)
+    image_properties = regionprops(label_image, image)[0]
+    center_of_mass = image_properties.weighted_centroid
+
+    return center_of_mass
+
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

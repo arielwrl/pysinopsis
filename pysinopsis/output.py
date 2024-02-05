@@ -222,8 +222,6 @@ class SinopsisCube:
         if verbose:
             print('Results correctly read')
 
-        self.config['sfh_type'] = 'ff'
-
         # Try to read velocity dispersion
         try:
             self.velocity_dispersion = fits.open(sinopsis_directory + self.galaxy_id + '_sig_abs_mask.fits')[0].data
@@ -244,6 +242,8 @@ class SinopsisCube:
 
             self.sfh = np.array([self.properties['sfr_' + str(i)] for i in range(1, self.n_ages+1)])
             self.sfh = np.ma.masked_array(self.sfh, mask=self.sfh == -999)
+
+            self.integrated_sfh = self.sfh.sum(axis=(1, 2))
 
         # Equivalend widths:
         if ~memory_saving:

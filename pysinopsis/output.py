@@ -285,24 +285,24 @@ class SinopsisCube:
         self.cube_shape = self.f_obs.shape
 
         # Model cube:
-        model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]
-        model_cube_nolines = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube_nolines.fits')[0]
+        try:
+            model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]
+            model_cube_nolines = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube_nolines.fits')[0]            
+            if verbose:
+                print('Model cube read')
+            if ~memory_saving:
+                self.emission_only = self.f_obs - self.f_syn_cont
 
-        if verbose:
-            print('Model cube read')
+            if ~memory_saving:
+                self.emission_only_model = self.f_syn - self.f_syn_cont             
+        except:
+            print('No Model Cube')
 
         self.f_syn = masked_array(model_cube.data * self.flux_unit, mask=model_cube.data == -999)
         self.f_syn_cont = masked_array(model_cube_nolines.data * self.flux_unit, mask=model_cube.data == -999)
 
         if verbose:
             print('f_syn Calculated')
-
-        # Emission only cube:
-        if ~memory_saving:
-            self.emission_only = self.f_obs - self.f_syn_cont
-
-        if ~memory_saving:
-            self.emission_only_model = self.f_syn - self.f_syn_cont  # FIXME: Does it make sense to have this?
 
         if verbose:
             print('Emission-only calculated')

@@ -177,6 +177,26 @@ def calc_manual_ew(wl, flux, delta_wl, line):
 
         ew_range = (wl > 6553.0) & (wl < 6573.0)
 
+    if line == 'Oii':
+
+        blue_cont = np.median(flux[(wl > 3670.0) & (wl < 3718.0)])
+        red_cont = np.median(flux[(wl > 3738.0) & (wl < 3774.0)])
+
+        blue_wl = np.mean(wl[(wl > 3670.0) & (wl < 3718.0)])
+        red_wl = np.mean(wl[(wl > 3738.0) & (wl < 3774.0)])
+
+        ew_range = (wl > 3717.0) & (wl < 3737.0)
+    
+    if line == 'Oiii':
+
+        blue_cont = np.median(flux[(wl > 4985.5) & (wl < 4998)])
+        red_cont = np.median(flux[(wl > 5018.0) & (wl < 5036.0)])
+
+        blue_wl = np.mean(wl[(wl > 4985.5) & (wl < 4998)])
+        red_wl = np.mean(wl[(wl > 5018.0) & (wl < 5036.0)])
+
+        ew_range = (wl > 4997.0) & (wl < 5017.0)
+    
     cont_slope = (red_cont - blue_cont) / (red_wl - blue_wl)
     cont_intercept = blue_cont - blue_wl * cont_slope
 

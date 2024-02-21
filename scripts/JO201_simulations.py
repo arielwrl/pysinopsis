@@ -2,9 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pysinopsis.models import ModelSet
 from pysinopsis.utils import luminosity_distance
-from pysinopsis.synphot import synflux, synmag
+from pysinopsis.synphot import synflux, synmag, pivot_wavelength
 from astropy.table import Table
-
 
 cb2020_dir = 'C:/Users/ariel/Workspace/sinopsis/data/ssp/ssp_cb2020/'
 f275w_filter = 'C:/Users/ariel/Workspace/pysinopsis/pysinopsis/data/filters/HST_WFC3_UVIS2.F275W.dat'

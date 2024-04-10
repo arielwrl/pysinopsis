@@ -3,13 +3,13 @@ import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
 
-long_description = (here / "README.md").read_text(encoding="utf-8")
+# long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="pysinopsis",
     version="0.1.0",
     description="A set of python tools to work with SINOPSIS output.",
-    long_description=long_description,
+    # long_description=long_description,
     url="https://github.com/arielwrl/pysinopsis",
     author="Ariel Werle",
     author_email="ariel.werle@inaf.it",

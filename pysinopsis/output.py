@@ -1,12 +1,3 @@
-"""
-
-ariel@padova
-29/05/2020
-
-Tools to organize SINOPSIS output in python.
-
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
@@ -21,10 +12,23 @@ from pycasso2.resampling import apply_kinematics
 
 def read_config(sinopsis_dir='./'):
     """
-    :param sinopsis_dir:
-    :return: config dictionary
-    """
+    Reads configuration settings from a SINOPSIS configuration file.
 
+    Parameters:
+        sinopsis_dir (str, optional): The directory containing the SINOPSIS configuration file. 
+            Defaults to './'.
+
+    Returns:
+        dict: A dictionary containing the extracted configuration settings.
+            - 'input_catalog' (str): The input catalog file name.
+            - 'input_type' (str): The type of input data (e.g., 'cube', '1D Spectrum').
+            - 'sinopsis_dir' (str): The directory where SINOPSIS was run.
+            - 'sfh_type' (str): The type of star formation history (e.g., 'ff', 'lognormal').
+
+    Raises:
+        FileNotFoundError: If the SINOPSIS configuration file is not found.
+    """
+ 
     config_file = np.array(open(sinopsis_dir + 'config.sin', 'rb').readlines()).astype(str)
 
     config_dict = {'input_catalog': config_file[12].split()[-1],
@@ -41,11 +45,15 @@ def read_config(sinopsis_dir='./'):
 
 def read_sinopsis_catalog(sinopsis_dir, input_catalog_file, input_type):
     """
+    Read SINOPSIS catalog information.
 
-    :param sinopsis_dir:
-    :param input_catalog_file:
-    :param input_type:
-    :return:
+    Parameters:
+        sinopsis_dir (str): Directory containing SINOPSIS data.
+        input_catalog_file (str): Filename of the input catalog file.
+        input_type (str): Type of input data ('cube', 'spec', etc.).
+
+    Returns:
+        dict: Dictionary containing SINOPSIS catalog information.
     """
 
     if input_type == 'cube':
@@ -66,19 +74,16 @@ def read_sinopsis_catalog(sinopsis_dir, input_catalog_file, input_type):
 
 def read_results_cube(output_cube_file, cube_type):
     """
+    Read results data cube into a dictionary of masked arrays.
 
-    Reads SINOPSIS output cube into a dictionary of masked arrays.
+    Parameters:
+        output_cube_file (str): Filename of the output cube file.
+        cube_type (str): Type of cube ('dexp', 'GASP', etc.).
 
-    input:
-    -----------
-    output_cube_file: file name of SINOPSIS output cube
-        type: str
-    cube_type: One of dexp, ff or GASP, distinguishes between different version of SINOPSIS results cube
-
-    returns:
-    -----------
-    dictionary containing SINOPSIS outputs
-
+    Returns:
+        tuple: A tuple containing header information and properties.
+            The header information is a dictionary containing selected header keys.
+            The properties is an OrderedDict containing properties extracted from the cube.
     """
 
     output_cube = fits.open(output_cube_file)[0]
@@ -109,18 +114,14 @@ def read_results_cube(output_cube_file, cube_type):
 
 def read_eqw_cube(eqw_cube_file):
     """
+    Read SINOPSIS equivalent width (EQW) cube from a FITS file.
 
-    Reads SINOPSIS eqw cube into a dictionary of masked arrays.
+    Parameters:
+        eqw_cube_file (str): Filename of the EQW cube FITS file.
 
-    input:
-    -----------
-    output_cube_file: file name of SINOPSIS equivalent widths cube
-        type: str
-
-    returns:
-    -----------
-    dictionary containing SINOPSIS eqw
-
+    Returns:
+        OrderedDict: A dictionary containing EQW data for each plane.
+            The keys are EQW plane names, and the values are masked arrays representing EQW data.
     """
 
     eqw_cube = fits.open(eqw_cube_file)[0]
@@ -136,18 +137,14 @@ def read_eqw_cube(eqw_cube_file):
 
 def read_mag_cube(mag_cube_file):
     """
+    Read SINOPSIS magnitudes cube from a FITS file.
 
-    Reads SINOPSIS magnitudes cube into a dictionary of masked arrays.
+    Parameters:
+        mag_cube_file (str): Filename of the magnitudes cube FITS file.
 
-    input:
-    -----------
-    output_cube_file: file name of SINOPSIS equivalent widths cube
-        type: str
-
-    returns:
-    -----------
-    dictionary containing SINOPSIS magnitudes
-
+    Returns:
+        OrderedDict: A dictionary containing magnitudes.
+            The keys are magnitudes plane names, and the values are masked arrays representing magnitudes data.
     """
 
     mag_cube = fits.open(mag_cube_file)[0]
@@ -162,8 +159,23 @@ def read_mag_cube(mag_cube_file):
 
 
 def read_sfh_file(fname):
+    """
+    Read star formation history (SFH) data from a file.
 
-    # Find how many lines should be skipped:
+    Parameters:
+        fname (str): The filename of the SFH file.
+
+    Returns:
+        tuple: A tuple containing three numpy arrays:
+            - age (numpy.ndarray): Array of ages.
+            - sfr (numpy.ndarray): Array of star formation rates (SFRs).
+            - ebv (numpy.ndarray): Array of extinction values (E(B-V)).
+   
+    Notes:
+        The SFH file is expected to have a specific format with a header row and data rows.
+        The function automatically detects the header row and skips it when reading the data.
+    """
+
     file = open(fname, 'rb').readlines()
     for i in range(len(file)):
         if np.any(np.array(file[i].split())==b'Age'):
@@ -177,6 +189,18 @@ def read_sfh_file(fname):
 
 
 def read_fit_results(fname, skip_header=1, skip_footer=12):
+    """
+    Read fitting results from a file.
+
+    Parameters:
+        fname (str): The filename of the file containing fitting results.
+        skip_header (int): Number of header lines to skip when reading the file. Default is 1.
+        skip_footer (int): Number of footer lines to skip when reading the file. Default is 12.
+
+    Returns:
+        dict: A dictionary containing fitting results as numpy arrays with keys corresponding 
+        to parameter names.
+    """
 
     results = np.genfromtxt(fname, skip_header=skip_header, skip_footer=skip_footer)
 
@@ -184,26 +208,31 @@ def read_fit_results(fname, skip_header=1, skip_footer=12):
                     'Deltl' : results[:, 1],
                     'Sigma' : results[:, 2],
                     'Weight' : results[:, 3],
-                    'Obs'   : results[:, 5],
+                    'Obs' : results[:, 5],
                     'Model' : results[:, 5],
-                    'Chi'   : results[:, 6]}
+                    'Chi' : results[:, 6]}
 
     return results_dict
 
 
 class SinopsisCube:
     """
-
-    Reads SINOPSIS output for a datacube into a python object.
-
-    input:
-    -----------
-    sinopsis_directory: Directory with SINOPSIS files (must end with /)
-        type: str
+    
+    Represents the full SINOPSIS output cubes and provides methods to manipulate and visualize the data.
 
     """
 
     def __init__(self, sinopsis_directory='./', memory_saving=False, verbose=False):
+        """
+        Initializes a SinopsisCube object.
+
+        For very large input data cubes (e.g 4Gb), `memory_saving=True` is recommended.
+
+        Parameters:
+            sinopsis_directory (str): Directory containing SINOPSIS data.
+            memory_saving (bool): Flag indicating whether to load certain data into memory or not. Default is False.
+            verbose (bool): Flag indicating whether to print verbose information during initialization. Default is False.
+        """
 
         config = read_config(sinopsis_directory)
         catalog = read_sinopsis_catalog(sinopsis_directory, config['input_catalog'], input_type='cube')
@@ -265,7 +294,6 @@ class SinopsisCube:
                            'flux': obs_cube[1].header,
                            'error': obs_cube[2].header}
 
-
         try:
             self.flux_unit = 10 ** float(self.obs_header['flux']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
         except Exception:
@@ -307,13 +335,36 @@ class SinopsisCube:
         if verbose:
             print('Emission-only calculated')
 
+
     def invalid_spaxel(self, x, y):
+        """
+        Checks if the given spaxel is invalid.
+
+        Parameters:
+            x (int): x-coordinate of the spaxel.
+            y (int): y-coordinate of the spaxel.
+
+        Returns:
+            bool: True if the spaxel is invalid, False otherwise.
+        """
+
         if np.any(self.f_syn[:, x, y].mask):
             return True
         else:
             return False
 
+
     def fit_details(self, x, y):
+        """
+        Retrieves the fitting details for a specific spaxel.
+
+        Parameters:
+            x (int): x-coordinate of the spaxel.
+            y (int): y-coordinate of the spaxel.
+
+        Returns:
+            tuple: A tuple containing arrays of ages and SFR (star formation rate) values.
+        """
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
@@ -322,24 +373,43 @@ class SinopsisCube:
 
             fname_prefix = self.obs_file.split('.')[0]
             fname_fit_details = self.sinopsis_directory + fname_prefix + '.%0.4d_%0.4d.out' % (
-            y + 1, x + 1)  # FIXME: 0- or 1-indexed?
-
-            # n_features = open(fname_fit_details, 'rt').read().splitlines()[0].split()[0]
-            # n_features = int(n_features)
+            y + 1, x + 1)  
 
             age, sfr = read_sfh_file(fname_fit_details)
 
             return age, sfr
 
+
     def plot_map(self, sinopsis_property, show_plot=True, ax=None, custom_mask=None, cmap='magma_r'):
+        """
+        Plots a map of a SINOPSIS property.
+
+        Parameters:
+            sinopsis_property (str): Property whose map is to be plotted.
+            show_plot (bool): Flag indicating whether to display the plot. Default is True.
+            ax (matplotlib.axes.Axes): Axes object to plot on. If None, creates a new plot. Default is None.
+            custom_mask (numpy.ndarray): Custom mask for masking certain areas in the map. Default is None.
+            cmap (str): Name of the colormap to use. Default is 'magma_r'.
+        """
 
         sinplot.plot_sinopsis_map(self, sinopsis_property, ax=ax, custom_mask=custom_mask, cmap=cmap)
 
         if show_plot:
             plt.show()
     
+
     def get_center_of_mass(self, sinopsis_property, custom_mask=None):
-        
+        """
+        Calculates the center of mass for a given SINOPSIS property.
+
+        Parameters:
+            sinopsis_property (str): Property for which the center of mass is to be calculated.
+            custom_mask (numpy.ndarray): Custom mask for masking certain areas. Default is None.
+
+        Returns:
+            tuple: A tuple containing the x and y coordinates of the center of mass.
+        """
+
         if custom_mask is not None:
             label_image = custom_mask
         else:
@@ -349,8 +419,22 @@ class SinopsisCube:
             
         return center_of_mass
 
+
     def plot_spectrum(self, x, y, plot_error=True, plot_legend=True, show_plot=True, ax=None, obs_color='k',
                       syn_color='g'):
+        """
+        Plots the spectrum of a spaxel.
+
+        Parameters:
+            x (int): x-coordinate of the spaxel.
+            y (int): y-coordinate of the spaxel.
+            plot_error (bool): Flag indicating whether to plot error spectrum. Default is True.
+            plot_legend (bool): Flag indicating whether to include a legend in the plot. Default is True.
+            show_plot (bool): Flag indicating whether to display the plot. Default is True.
+            ax (matplotlib.axes.Axes): Axes object to plot on. If None, creates a new plot. Default is None.
+            obs_color (str): Color for observed spectrum. Default is 'k'.
+            syn_color (str): Color for synthetic spectrum. Default is 'g'.
+        """
 
         if ax is None:
             plt.figure()
@@ -366,8 +450,21 @@ class SinopsisCube:
         if show_plot:
             plt.show()
 
+
     def plot_fit_complete(self, x, y, figsize=(13.25, 8.5), out_file_name=None, out_format='png',
                           show_plot=True, use_kin=False):
+        """
+        Plots a complete diagnostics of a fit for a given spaxel.
+
+        Parameters:
+            x (int): x-coordinate of the spaxel.
+            y (int): y-coordinate of the spaxel.
+            figsize (tuple): Size of the figure (width, height) in inches. Default is (13.25, 8.5).
+            out_file_name (str): Output file name if saving the plot. If None, doesn't save. Default is None.
+            out_format (str): Format for the output file. Default is 'png'.
+            show_plot (bool): Flag indicating whether to display the plot. Default is True.
+            use_kin (bool): Flag indicating whether to apply kinematics. Default is False.
+        """
 
         if self.invalid_spaxel(x, y):
             print('>>> Masked spaxel!')
@@ -446,18 +543,20 @@ class SinopsisCube:
 
 
 class Sinopsis1D:
-    """
+    """ 
 
-    Reads SINOPSIS output for a catalog of 1d spectra into a python object.
-
-    input:
-    -----------
-    sinopsis_directory: Directory with SINOPSIS files (must end with /)
-        type: str
+    Provides minimal support for 1D fits.
 
     """
 
     def __init__(self, sinopsis_directory):
+        """
+        Initializes a Sinopsis1D object.
+
+        Parameters:
+            sinopsis_directory (str): The directory containing SINOPSIS files.
+        """
+        
         self.catalog_in = Table.read(sinopsis_directory + 'catalog.in', data_start=1, format='ascii')
         self.catalog_out = Table.read(sinopsis_directory + 'catalog.out', format='ascii')
         self.catalog_mag = Table.read(sinopsis_directory + 'catalog.mag', format='ascii')
@@ -474,16 +573,3 @@ class Sinopsis1D:
         self.age_bins_4 = np.genfromtxt(sinopsis_directory + 'catalog.bin', skip_header=3)
         self.age_bins_4 = np.append(0, self.age_bins_4)
 
-
-if __name__ == '__main__':
-    import importlib
-
-    importlib.reload(sinplot)
-    importlib.reload(utils)
-
-    sinopsis_cube = SinopsisCube('tests/test_run/')
-    sinopsis_cube.plot_spectrum(54, 29, plot_error=False)
-    sinopsis_cube.plot_map('SFR1')
-    sinopsis_cube.plot_fit_complete(54, 29)
-
-    # sinopsis_1d = Sinopsis1D('tests/test1d/')

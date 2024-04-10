@@ -1,18 +1,20 @@
 import numpy as np
 from scipy.interpolate import interp1d
+from pysinopsis.utils import resampler
 
-
-def resampler(x_old, y_old, x_new):
-
-    interp = interp1d(x_old, y_old, bounds_error = False
-    , fill_value = (0.,0.))
-
-    y_new = interp(x_new)
-    
-    return y_new
-    
 
 def synflux(wl, flux, filter_curve):
+    """
+    Computes synthetic photometry flux using a given filter curve.
+
+    Parameters:
+        wl (array-like): Wavelength array.
+        flux (array-like): Flux array.
+        filter_curve (str or array-like): Filename of the filter curve or array containing the wavelength and transmission arrays.
+
+    Returns:
+        float: Synthetic flux value.
+    """
     
     if type(filter_curve) is str: 
         wl_filter, T = np.genfromtxt(filter_curve).transpose()
@@ -32,6 +34,21 @@ def synflux(wl, flux, filter_curve):
 
 def synmag(wl, flux, filter_curve, error=None, flag=None, badpix_tolerance=0.25, 
            interpolate_bad_pixels=False):
+    """
+    Computes the synthetic magnitude using a given filter curve.
+
+    Parameters:
+        wl (array-like): Wavelength array.
+        flux (array-like): Flux array.
+        filter_curve (str or tuple): Filename of the filter curve or tuple containing the wavelength and transmission arrays.
+        error (array-like, optional): Error array (default is None).
+        flag (array-like, optional): Flag array indicating bad pixels (default is None).
+        badpix_tolerance (float, optional): Tolerance for identifying bad pixels (default is 0.25).
+        interpolate_bad_pixels (bool, optional): Flag to interpolate bad pixels (default is False).
+
+    Returns:
+        tuple or float: Tuple containing the synthetic magnitude, its error, and a boolean indicating bad pixels if error is provided, otherwise just the synthetic magnitude.
+    """
 
     if type(filter_curve) is str: 
         wl_filter, T = np.genfromtxt(filter_curve).transpose()
@@ -71,6 +88,15 @@ def synmag(wl, flux, filter_curve, error=None, flag=None, badpix_tolerance=0.25,
 
 
 def pivot_wavelength(filter_curve):
+    """
+    Computes the pivot wavelength of a filter curve.
+
+    Parameters:
+        filter_curve (str or tuple): Filename of the filter curve or tuple containing the wavelength and transmission arrays.
+
+    Returns:
+        float: Pivot wavelength.
+    """
 
     if type(filter_curve) is str: 
         wl_filter, T = np.genfromtxt(filter_curve).transpose()
@@ -84,6 +110,17 @@ def pivot_wavelength(filter_curve):
 
 
 def effective_wavelength(wl, spectrum, filter_curve):
+    """
+    Computes the effective wavelength of a spectrum filtered by a given filter curve.
+
+    Parameters:
+        wl (array-like): Wavelength array of the spectrum.
+        spectrum (array-like): Flux array.
+        filter_curve (str or tuple): Filename of the filter curve or tuple containing the wavelength and transmission arrays.
+
+    Returns:
+        float: Effective wavelength.
+    """
 
     if type(filter_curve) is str: 
         wl_filter, T = np.genfromtxt(filter_file).transpose()

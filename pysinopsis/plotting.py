@@ -1,19 +1,9 @@
-"""
-
-ariel@padova
-01/06/2020
-
-Tools for plotting SINOPSIS output.
-
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
-rc('text', usetex=True)
+rc('text', usetex=True) 
 
-# FIXME: Not sure of many of these labels
 sinopsis_labels = {'Dl': r'$D_L \mathrm{[Mpc]}$',
                    'z': r'$z$',
                    'redchi': r'$\chi^2/N$',
@@ -99,25 +89,25 @@ spec_labels = {'wl': r'$\lambda \, \mathrm{[\AA]}$',
 def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True, plot_legend=True, flux_unit=1,
              flux_unit_err=1, obs_color='k', syn_color='b', syn_cont_color='g', obs_lw=0.5, syn_lw=1.5, z=0):
     """
+    Plot observed and synthetic spectra.
 
-    FIXME: Doc me
-
-    :param z:
-    :param syn_lw:
-    :param obs_lw:
-    :param syn_cont_color:
-    :param syn_color:
-    :param obs_color:
-    :param wl:
-    :param f_obs:
-    :param f_syn:
-    :param f_syn_cont:
-    :param f_err:
-    :param ax:
-    :param plot_error:
-    :param plot_legend:
-    :param flux_unit:
-
+    Parameters:
+      wl (array-like): Wavelength array.
+      f_obs (array-like): Observed flux array.
+      f_syn (array-like): Synthetic flux array.
+      f_syn_cont (array-like): Synthetic continuum flux array.
+      f_err (array-like, optional): Flux error array. Default is None.
+      ax (matplotlib.axes.Axes, optional): Axes object for plotting. If None, creates new. Default is None.
+      plot_error (bool, optional): Whether to plot error spectrum. Default is True.
+      plot_legend (bool, optional): Whether to plot the legend. Default is True.
+      flux_unit (float, optional): Unit conversion factor for flux. Default is 1.
+      flux_unit_err (float, optional): Unit conversion factor for flux error. Default is 1.
+      obs_color (str, optional): Color for observed spectrum. Default is 'k' (black).
+      syn_color (str, optional): Color for synthetic spectrum. Default is 'b' (blue).
+      syn_cont_color (str, optional): Color for synthetic continuum spectrum. Default is 'g' (green).
+      obs_lw (float, optional): Linewidth for observed spectrum. Default is 0.5.
+      syn_lw (float, optional): Linewidth for synthetic spectra. Default is 1.5.
+      z (float, optional): Redshift. Default is 0.
     """
 
     if plot_error is True and f_err is None:
@@ -142,6 +132,18 @@ def plot_fit(wl, f_obs, f_syn, f_syn_cont, f_err=None, ax=None, plot_error=True,
 
 
 def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, z=0, ax=None):
+    """
+    Plot residuals between observed and synthetic continuum spectra.
+
+    Parameters:
+      wl (array-like): Wavelength array.
+      f_obs (array-like): Observed flux array.
+      f_syn_cont (array-like): Synthetic continuum flux array.
+      res_color (str, optional): Color for residuals plot. Default is 'g' (green).
+      res_lw (float, optional): Linewidth for residuals plot. Default is 0.5.
+      z (float, optional): Redshift. Default is 0.
+      ax (matplotlib.axes.Axes, optional): Axes object for plotting. If None, uses the current Axes. Default is None.
+    """
 
     if ax is None:
         ax = plt.gca()
@@ -151,13 +153,21 @@ def plot_residuals(wl, f_obs, f_syn_cont, res_color='g', res_lw=0.5, z=0, ax=Non
     ax.set_ylabel(spec_labels['res'], fontsize=12)
     ax.set_xlabel(spec_labels['wl'], fontsize=12)
 
-    #ax.set_ylim(-0.35, 0.35)
-
     ax.hlines(y=0, xmin=wl[0] / (1+z), xmax=wl[-1] / (1+z), lw=2, zorder=15, linestyles='dashed')
 
 
 def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None, custom_mask=None):
+    """
+    Plot a map of a SINOPSIS property.
 
+    Parameters:
+      sinopsis_cube (SinopsisCube): The SINOPSIS cube containing the property data.
+      sinopsis_property (str): The property to plot.
+      cmap (str, optional): The colormap for the plot. Default is 'magma_r'.
+      ax (matplotlib.axes.Axes, optional): Axes object for plotting. If None, uses the current Axes. Default is None.
+      custom_mask (array-like, optional): Custom mask to apply to the property data. Default is None.
+    """
+    
     if ax is None:
         ax = plt.gca()
 
@@ -175,7 +185,15 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None,
 
 
 def plot_sfh(age_bin_center, sfh_array, ax=None):
+    """
+    Plot the star formation history (SFH).
 
+    Parameters:
+      age_bin_center (array-like): Array containing the central ages of the bins.
+      sfh_array (array-like): Array containing the star formation rates (SFRs).
+      ax (matplotlib.axes.Axes, optional): Axes object for plotting. If None, uses the current Axes. Default is None.
+    """
+    
     if ax is None:
         ax = plt.gca()
 

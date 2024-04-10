@@ -1,0 +1,10 @@
+LICENSE.txt
+README.md
+setup.cfg
+setup.py
+pysinopsis/pysinopsis.egg-info/PKG-INFO
+pysinopsis/pysinopsis.egg-info/SOURCES.txt
+pysinopsis/pysinopsis.egg-info/dependency_links.txt
+pysinopsis/pysinopsis.egg-info/requires.txt
+pysinopsis/pysinopsis.egg-info/top_level.txt
+tests/test_models.py

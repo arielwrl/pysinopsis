@@ -7,7 +7,6 @@ from astropy.table import Table
 from collections import OrderedDict
 import pysinopsis.plotting as sinplot
 from pysinopsis import utils
-from pycasso2.resampling import apply_kinematics
 
 
 def read_config(sinopsis_dir='./'):
@@ -452,7 +451,7 @@ class SinopsisCube:
 
 
     def plot_fit_complete(self, x, y, figsize=(13.25, 8.5), out_file_name=None, out_format='png',
-                          show_plot=True, use_kin=False):
+                          show_plot=True):
         """
         Plots a complete diagnostics of a fit for a given spaxel.
 
@@ -463,7 +462,6 @@ class SinopsisCube:
             out_file_name (str): Output file name if saving the plot. If None, doesn't save. Default is None.
             out_format (str): Format for the output file. Default is 'png'.
             show_plot (bool): Flag indicating whether to display the plot. Default is True.
-            use_kin (bool): Flag indicating whether to apply kinematics. Default is False.
         """
 
         if self.invalid_spaxel(x, y):
@@ -479,14 +477,8 @@ class SinopsisCube:
         ax_map = plt.subplot(gs[3:5, 2:4])
 
         # Plotting fit and residuals:
-        if use_kin:
-            fsyn = apply_kinematics(self.wl, self.f_syn[:, x, y], 0, self.velocity_dispersion[x, y],
-                                         nproc=1)
-            fsyn_cont = apply_kinematics(self.wl, self.f_syn_cont[:, x, y], 0, self.velocity_dispersion[x, y],
-                                              nproc=1)
-        else:
-            fsyn = self.f_syn[:, x, y]
-            fsyn_cont = self.f_syn_cont[:, x, y]
+        fsyn = self.f_syn[:, x, y]
+        fsyn_cont = self.f_syn_cont[:, x, y]
 
         sinplot.plot_fit(self.wl, self.f_obs[:, x, y], fsyn, fsyn_cont,
                          self.f_err[:, x, y], ax=ax_spectrum, z=self.catalog['z'])

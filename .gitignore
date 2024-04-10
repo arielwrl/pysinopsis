@@ -12,3 +12,4 @@
 *.pdf
 *.sin
 dist
+pysinopsis/pysinopsis.egg-info

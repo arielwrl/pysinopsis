@@ -184,7 +184,7 @@ def plot_sinopsis_map(sinopsis_cube, sinopsis_property, cmap='magma_r', ax=None,
     cb.set_label(sinopsis_labels[sinopsis_property], fontsize=20)
 
 
-def plot_sfh(age_bin_center, sfh_array, ax=None):
+def plot_sfh(age_bin_center, sfh_array, ax=None, sfh_color='steelblue'):
     """
     Plot the star formation history (SFH).
 
@@ -197,7 +197,8 @@ def plot_sfh(age_bin_center, sfh_array, ax=None):
     if ax is None:
         ax = plt.gca()
 
-    ax.scatter(np.log10(age_bin_center), sfh_array)
+    ax.scatter(np.log10(age_bin_center), sfh_array, color=sfh_color)
+    ax.plot(np.log10(age_bin_center), sfh_array, color=sfh_color)
 
     ax.set_ylabel('SFR', fontsize=12)
     ax.set_xlabel(r'$\log \, t \, \mathrm{[yr]}$', fontsize=12)

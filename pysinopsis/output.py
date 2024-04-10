@@ -508,7 +508,7 @@ class SinopsisCube:
 
         # A map to show the spaxel:
         reference_map = ax_map.imshow(np.sum(self.f_obs, axis=0), cmap='Blues', origin='lower')
-        fig.colorbar(mappable=reference_map, ax=ax_map, label=r'$\log F_\lambda$')
+        fig.colorbar(mappable=reference_map, ax=ax_map, label=r'$\log \, \Sigma \, F_\lambda$')
         ax_map.scatter(y, x, marker='x', s=80, c='r', label='x =' + str(y) + ', y =' + str(x))
         ax_map.legend()
         ax_map.set_xlabel('x', fontsize=12)

@@ -50,7 +50,7 @@ def calc_sn(wl, f_obs, f_err, z, window_limits=(5500, 5700)):
 
 
 def calc_continuum_rms(wl, f_obs, f_syn, z, window_limits=(5500, 5700)):
-     """
+    """
     Calculates the root mean square (RMS) deviation of the continuum flux between observed and synthetic spectra
     within a specified wavelength window.
 
@@ -64,7 +64,7 @@ def calc_continuum_rms(wl, f_obs, f_syn, z, window_limits=(5500, 5700)):
     Returns:
         float: Root mean square (RMS) deviation of the continuum flux.
     """ 
-
+    
     wl = wl / (1 + z)
 
     window = (wl > window_limits[0]) & (wl < window_limits[1])

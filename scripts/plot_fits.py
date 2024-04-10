@@ -13,8 +13,6 @@ import itertools
 from pysinopsis.output import SinopsisCube
 import os
 
-plt.ioff()  # This has to be done when running on pycharm
-
 sns.set_style('whitegrid')
 
 galaxy_id = 'A2744_02'

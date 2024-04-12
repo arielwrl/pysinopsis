@@ -214,6 +214,36 @@ def read_fit_results(fname, skip_header=1, skip_footer=12):
     return results_dict
 
 
+def read_obs_cube(fname):
+
+        obs_cube = fits.open(fname)
+
+        obs_header = {'primary': obs_cube[0].header,
+                      'flux': obs_cube[1].header,
+                      'error': obs_cube[2].header}
+
+        try:
+            flux_unit = 10 ** float(obs_header['flux']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
+        except Exception:
+            print('Cannot read flux unit from ', obs_header['flux']['BUNIT'], ', trying to split()[0] instead:',
+                  obs_header['flux']['BUNIT'].split()[0])
+            flux_unit = float(obs_header['flux']['BUNIT'].split()[0])
+        try:
+            flux_unit_err = 10 ** float(obs_header['error']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
+        except Exception:
+            print('Cannot read flux unit from ', obs_header['error']['BUNIT'], ', trying to split()[0] instead:',
+                  obs_header['error']['BUNIT'].split()[0])
+            flux_unit_err = float(obs_header['error']['BUNIT'].split()[0])
+
+        wl = obs_cube[1].header['CRVAL3'] + obs_cube[1].header['CD3_3'] * np.arange(obs_cube[1].header['NAXIS3'])
+        f_obs = masked_array(obs_cube[1].data * flux_unit, mask=np.isnan(obs_cube[1].data))
+        f_err = masked_array(np.sqrt(obs_cube[2].data * flux_unit_err), mask=np.isnan(obs_cube[2].data))  # FIXME: CHECK!
+        cube_shape = f_obs.shape
+
+        return {'obs_header': obs_header, 'flux_unit': flux_unit, 'flux_unit_err': flux_unit_err,
+                'wl': wl, 'f_obs': f_obs, 'f_err': f_err, 'cube_shape': cube_shape}
+
+
 class SinopsisCube:
     """
     
@@ -285,31 +315,17 @@ class SinopsisCube:
         self.mask = fits.open(sinopsis_directory + self.galaxy_id + '_fitmask.fits')[0].data
 
         # Observed cube:
-        obs_cube = fits.open(self.sinopsis_directory + self.obs_file)
+        obs_cube = read_obs_cube(self.sinopsis_directory + self.obs_file)
         if verbose:
             print('Finished reading observed cube')
 
-        self.obs_header = {'primary': obs_cube[0].header,
-                           'flux': obs_cube[1].header,
-                           'error': obs_cube[2].header}
-
-        try:
-            self.flux_unit = 10 ** float(self.obs_header['flux']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
-        except Exception:
-            print('Cannot read flux unit from ', self.obs_header['flux']['BUNIT'], ', trying to split()[0] instead:',
-                  self.obs_header['flux']['BUNIT'].split()[0])
-            self.flux_unit = float(self.obs_header['flux']['BUNIT'].split()[0])
-        try:
-            self.flux_unit_err = 10 ** float(self.obs_header['error']['BUNIT'].split()[0].split('**')[1].split('(')[-1].split(')')[0])
-        except Exception:
-            print('Cannot read flux unit from ', self.obs_header['error']['BUNIT'], ', trying to split()[0] instead:',
-                  self.obs_header['error']['BUNIT'].split()[0])
-            self.flux_unit_err = float(self.obs_header['error']['BUNIT'].split()[0])
-
-        self.wl = obs_cube[1].header['CRVAL3'] + obs_cube[1].header['CD3_3'] * np.arange(obs_cube[1].header['NAXIS3'])
-        self.f_obs = masked_array(obs_cube[1].data * self.flux_unit, mask=np.isnan(obs_cube[1].data))
-        self.f_err = masked_array(np.sqrt(obs_cube[2].data * self.flux_unit_err), mask=np.isnan(obs_cube[2].data))  # FIXME: CHECK!
-        self.cube_shape = self.f_obs.shape
+        self.obs_header = obs_cube['obs_header']
+        self.flux_unit = obs_cube['flux_unit']
+        self.flux_unit_err = obs_cube['flux_unit_err']
+        self.wl = obs_cube['wl']
+        self.f_obs = obs_cube['f_obs']
+        self.f_err = obs_cube['f_err']
+        self.cube_shape = obs_cube['cube_shape']
 
         # Model cube:
         model_cube = fits.open(sinopsis_directory + self.galaxy_id + '_modelcube.fits')[0]

@@ -383,7 +383,7 @@ def calc_center_of_mass(image, label_image):
         tuple: Coordinates of the center of mass (row, column).
     """
 
-    label_image = label_image.astype(int)
+    # label_image = label_image.astype(int)
     image_properties = regionprops(label_image, intensity_image=image)[0]
     center_of_mass = image_properties.centroid_weighted
 

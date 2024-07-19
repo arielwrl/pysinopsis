@@ -1,0 +1,27 @@
+13																												   ! number of lines; itereqw (how does it calculate EW)
+    Hth      Het       Hz      CaK      CaH       Hd      GCO       Hg       Hb   [OIII]       Mg      NaD       Ha   ! EW label
+3797.90  3835.00  3889.00  3933.70  3969.00  4101.70  4305.60  4340.50  4861.30  5007.00  5176.70  5894.00  6562.80   ! Central lambda
+   6.00     6.00     8.00     6.00     6.00     6.00    10.00     6.00    12.00     6.00    10.00    10.00     6.00   ! Starting DeltaLambda
+   0.10     0.10     0.80     1.20     1.00     0.20     0.40     0.40     0.20     0.10     0.20     0.40     0.20   ! Ddelta lambda (continuum def.)
+   1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00   ! Weight on the chi2
+   0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10   ! Minimum error (in Ang.)
+      0        1        0        1        1        1        0        0        1        0        0        0        1   ! Use (1) or not (0) the line as model constraint
+#the above set is used to measure lines in medium (~4 Angstroem) resolution spectra
+14																	                                           ! number of lines; itereqw (how does it calculate EW)
+  [OII]      Hth      Het       Hz      CaK      CaH       Hd      GCO       Hg       Hb   [OIII]       Mg      NaD       Ha   ! EW label
+3727.60  3797.90  3835.00  3889.00  3933.70  3969.00  4101.70  4305.60  4340.50  4861.30  5007.00  5176.70  5894.00  6562.80   ! Central lambda
+   6.00     8.00    10.00    12.00     8.00     8.00    10.00    16.00     8.00    12.00     6.00    12.00    14.00    10.00   ! Starting DeltaLambda
+   0.10     0.10     0.10     0.80     1.20     1.00     0.60     0.40     0.40     0.20     0.10     0.20     0.40     0.10   ! Ddelta lambda (continuum def.)
+   1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00   ! Weight on the chi2
+   0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10     0.10   ! Minimum error (in Ang.)
+      1        0        1        0        1        1        1        0        0        1        0        0        0        1   ! Use (1) or not (0) the line as model constraint
+#the above set is used to measure lines in low (~9 Angstroem) resolution spectra
+18																													                                   ! number of lines; itereqw (how does it calculate EW)
+ [NeV]a   [NeV]b    [OII]      Hth      Het  [NeIII]       Hz      CaK      CaH       Hd      GCO       Hg       Hb  [OIIIb]   [OIII]       Mg      NaD       Ha   ! EW label
+3345.90  3425.80  3727.00  3797.90  3835.00  3869.00  3889.00  3933.70  3969.00  4101.70  4305.60  4340.50  4861.30  4958.90  5007.00  5176.70  5894.00  6562.80   ! Central lambda
+  14.00    14.00    14.00    16.00    18.00    14.00    24.00    16.00    16.00    18.00    28.00    16.00    26.00    16.00    16.00    22.00    24.00    25.00   ! Starting DeltaLambda + 4
+   0.10     0.10     0.10     0.10     0.10     0.10     0.80     1.20     1.00     0.60     0.40     0.40     0.20     0.10     0.10     0.20     0.40     1.50   ! Ddelta lambda (continuum def.)
+   1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00   ! Weight on the chi2
+   1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00   ! Minimum error (in Ang.)
+      0        0        1        0        1        0        0        1        1        1        0        0        1        0        0        0        0        1   ! Use (1) or not (0) the line as model constraint
+#the above set is used to measure an extended se of lines in low (~9 Angstroem) resolution spectra

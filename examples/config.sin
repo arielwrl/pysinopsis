@@ -1,0 +1,97 @@
+##########################################################################################
+###                                                                                    ###
+###                          Configuration file for SINOPSIS                           ###
+###                                  version 1.6.7                                     ###
+###                                                                                    ###
+### If a keyword is not defined here, a default value will be assumed, when possible.  ###
+###     When a keywords has a set of possible values, these are indicated between ''   ### 
+###                                                                                    ###
+##########################################################################################
+##########################################################################################
+#######               #######
+###		INPUT CATALOG
+Name of the input catalog := catalog.cat
+# Allowed keywords: 'basic', 'advanced', 'eqw'
+Type of input catalog := basic
+##########################################################################################
+#######                                              #######
+###		OBSERVED SPECTRA CHARACTERISTICS and OPTIONS
+# Allowed keywords: 'ascii', 'fits', 'mfits', 'cube'
+Format of the observed spectrum or spectra := cube
+Spectral resolution of the data (FWHM in Angstroem) := 9.0
+# Allowed keywords: 'linear', 'logarithmic'
+Wavelength array in linear or logarithmic units := linear 
+# Allowed keywords:  'linear', 'logarithmic'
+Flux array in linear or logarithmic units := linear
+Number of lines to skip in the observed spectra (ascii format only) := 0
+Cut the observed spectra in the blue part by this amount (in Angstroem) := 0
+Cut the observed spectra in the red part by this amount (in Angstroem) := 0 
+# Allowed keywords: 'default', custom filename
+File with the parameters for the variable equivalent widths measurements := var_lines_parameters_highz.dat
+Use fixed bandwidths to measure equivalent widths in observed spectra := no
+# Allowed keywords: 'default', custom filename
+File with the parameters for the equivalent widths measurements := default
+Account for a contribution of [NII] to Halpha flux := 0.0
+Measure the equivalent width of Hbeta using fixed bandwidth := no
+Use constraints from spectral lines outside the observed spectral range := no
+Smooth the observed spectra resolution to match the SSP resolution := no
+Smooth the observed spectra to a custom resolution := no
+Resolution of the smoothed observed spectra (FWHM in Angstroem) := 6.0
+Write the smoothed observed spectra := no
+##########################################################################################
+#######                                                                        #######
+###		NORMALIZATION OF THE MODEL SPECTRUM & OBSERVED CONSTRAINTS (CONTINUUM)
+# Allowed keywords: 'phot', 'spec', 'none', 'norm'
+Normalize the model spectrum to := norm
+Normalisation factor := 1.0e-20
+# Allowed keywords: 'default', custom filename
+File with the definition of the continuum bands used as constraints := highz_cont_bands.dat
+# Allowed keywords: 'default', custom value
+Normalization of observed and model spectra := default
+##########################################################################################
+#######            #######
+###		EXTINCTION
+# Allowed keywords: 'MW', 'SMC', 'CAL', '2.5', '4.0', '5.0'
+Extinction curve to be adopted := MW
+##########################################################################################
+#######                                  #######
+###	    CHARACTERISTICS OF THE MODELLING
+# Allowed keywords: 'jm', 'cb20'
+SSP set := cb20
+# Allowed keywords: 'ff', 'dexp', 'logn'
+Star formation history pattern := ff
+# Allowed keywords: 'default', custom filename
+File with the star formation history parameters := default
+Number of different metallicity values := 3
+Metallicity values to be used := 0.004 0.017 0.04
+Smooth SSP spectra to the observed spectra resolution := no
+# Allowed keywords: 'zage', maxage, zform
+# When maximum age is given, it must be in units of yr (i.e.: 5.5e9)
+Set maximum age of the stellar populations := zage
+##########################################################################################
+#######                             #######
+###		UNCERTAINTIES DETERMINATION
+Number of separate runs for each metallicity value := 11 
+Chi2 threshold value to calculate uncertainties := 2.0
+##########################################################################################
+#######         #######
+###		VARIOUS
+Create a model magnitudes catalog := yes
+# Allowed keywords: 'Jon', 'AB'
+Magnitudes type for the model catalog := Jon
+Catalog of redshift-independent distances to be used := mydistances.dat
+Redshift value below which a redshift-independent distance is used := 0.001
+# Allowed keywords: 'default', custom filename
+File with cosmological parameters := default
+Output all the best fits for all runs and metallicities := no
+Write output file only for the reference models := no
+Write out the model spectra without emission lines := yes
+Write out the flag mask of fitted pixels in a cube dataset := yes
+Write out the contribution to the continuum flux from the SSPs := yes
+Write out the model spectra for each used age := no
+Minimize memory usage := n
+##########################################################################################
+#######                              #######
+###		DUSTY SSP AND IR CONSTRAINTS
+Include dusty SSPs := n 
+##########################################################################################

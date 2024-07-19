@@ -2,7 +2,6 @@
 *.out
 *.pyc
 *.spec
-*.dat
 *.log
 *.bin
 *.xml

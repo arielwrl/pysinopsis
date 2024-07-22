@@ -33,7 +33,7 @@ def read_config(sinopsis_dir='./'):
     config_dict = {'input_catalog': config_file[12].split()[-1],
                    'input_type': config_file[19].split()[-1],
                    'sinopsis_dir': sinopsis_dir,
-                   'sfh_type': config_file[59].split()[-1],
+                   'sfh_type': config_file[62].split()[-1],
                    }
 
     if config_dict['input_type'] == 'cube':
@@ -287,21 +287,21 @@ class SinopsisCube:
             self.velocity_dispersion = np.full_like(self.properties['mwage'], 0)
 
         # Ages:
-        if self.config['sfh_type'] == 'ff':
-            self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22,
-                                          skip_footer=6)[:, 0]  # FIXME: Double-check me
-            self.n_ages = len(self.age_bins)
-            self.age_bins = np.append(0, self.age_bins)
-            self.age_bin_width = np.array([self.age_bins[i+1] - self.age_bins[i] for i in range(self.n_ages)])
-            self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.config['input_catalog'].split('.')[0] + '.bin', skip_header=3)
-            self.age_bins_4 = np.append(0, self.age_bins_4)
+        # TODO: Add proper support for other SFH types
+        self.age_bins = np.genfromtxt(sinopsis_directory + self.galaxy_id + '.log', skip_header=22,
+                                        skip_footer=6)[:, 0]  # FIXME: Double-check me
+        self.n_ages = len(self.age_bins)
+        self.age_bins = np.append(0, self.age_bins)
+        self.age_bin_width = np.array([self.age_bins[i+1] - self.age_bins[i] for i in range(self.n_ages)])
+        self.age_bins_4 = np.genfromtxt(sinopsis_directory + self.config['input_catalog'].split('.')[0] + '.bin', skip_header=3)
+        self.age_bins_4 = np.append(0, self.age_bins_4)
 
-            self.age_bin_center = np.array([(self.age_bins[i] + self.age_bins[i + 1]) / 2 for i in range(self.n_ages)])
+        self.age_bin_center = np.array([(self.age_bins[i] + self.age_bins[i + 1]) / 2 for i in range(self.n_ages)])
 
-            self.sfh = np.array([self.properties['sfr_' + str(i)] for i in range(1, self.n_ages+1)])
-            self.sfh = np.ma.masked_array(self.sfh, mask=self.sfh == -999)
+        self.sfh = np.array([self.properties['sfr_' + str(i)] for i in range(1, self.n_ages+1)])
+        self.sfh = np.ma.masked_array(self.sfh, mask=self.sfh == -999)
 
-            self.integrated_sfh = self.sfh.sum(axis=(1, 2))
+        self.integrated_sfh = self.sfh.sum(axis=(1, 2))
 
         # Equivalend widths:
         if ~memory_saving:
